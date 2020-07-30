@@ -12,7 +12,7 @@ slurm = Slurm(
     dependency=dict(after=65541, afterok=34987),
     output=f'{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out',
 )
-slurm.sbatch('python demo.py ' + Slurm.SLURM_ARRAY_JOB_ID)
+slurm.sbatch('python demo.py ' + Slurm.SLURM_ARRAY_TAKSK_ID)
 ```
 The above snippet is equivalent to running the following command:
 
@@ -26,7 +26,7 @@ sbatch << EOF
 #SBATCH --job-name            name
 #SBATCH --output              %A_%a.out
 
-python demo.py \$SLURM_ARRAY_JOB_ID
+python demo.py \$SLURM_ARRAY_TAKSK_ID
 
 EOF
 ```
@@ -36,18 +36,18 @@ See https://slurm.schedmd.com/sbatch.html for details on the commands.
 
 
 
----
+
 ## Contents
 + [Installation instructions](#installation-instructions)
 + [Many syntaxes available](#many-syntaxes-available)
     - [Using configuration files](#using-configuration-files)
++ [Job dependencies](#job-dependencies)
 + [Additional features](#additional-features)
     - [Filename Patterns](#filename-patterns)
     - [Output Environment Variables](#output-environment-variables)
 
 
 
----
 ## Installation instructions
 
 From PyPI
@@ -63,7 +63,6 @@ pip install git+https://github.com/amq92/simple-slurm.git
 
 
 
----
 ## Many syntaxes available
 
 ```python
@@ -121,7 +120,28 @@ The job can be updated according to the *dynamic* project needs (ex. `NUMBER_OF_
 
 
 
----
+
+## Job dependencies
+
+The `sbatch` call prints a message if successful and returns the corresponding `job_id` 
+
+```python
+job_id = slurm.sbatch('python demo.py ' + Slurm.SLURM_ARRAY_TAKSK_ID)
+```
+
+If the job submission was successful, it prints:
+
+```
+Submitted batch job 34987
+```
+
+And returns the variable `job_id = 34987`, which can be used for setting dependencies on subsequent jobs
+
+```python
+slurm_after = Slurm(dependency=dict(afterok=job_id)))
+```
+
+
 ## Additional features
 
 For convenience, Filename Patterns and Output Environment Variables are available as attributes of the Simple Slurm object.
