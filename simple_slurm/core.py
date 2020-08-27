@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+import sys
 
 
 shebang = '#!/bin/sh'
@@ -101,7 +102,7 @@ class Slurm():
         return script_cmd
 
     def run(self, slurm_cmd: str, run_cmd: str,
-            convert: bool = True) -> subprocess.CompletedProcess:
+            convert: bool = True, **kwargs) -> subprocess.CompletedProcess:
         '''Execute the given commands with the generated sbatch script included
         as a 'here document' code block.
 
@@ -120,8 +121,16 @@ class Slurm():
                        self.arguments,
                        run_cmd.replace('$', '\\$') if convert else run_cmd,
                        'EOF']),
-            stdout=subprocess.PIPE,
-            shell=True)
+            shell=True,
+            **kwargs
+        )
+
+    def srun(self, run_cmd: str, convert: bool = True) -> int:
+        args = (f'--{k}={v}' for (k, v) in vars(self.namespace).items() if v is not None)
+        cmd = ' '.join(('srun', *args, run_cmd))
+
+        result = subprocess.run(cmd, shell=True, check=True)
+        return result.returncode
 
     def sbatch(self, run_cmd: str, convert: bool = True) -> int:
         '''Run the sbatch command with all the (previously) set arguments and
@@ -133,7 +142,7 @@ class Slurm():
 
         See run for more details.
         '''
-        result = self.run(sbatch_cmd, run_cmd)
+        result = self.run(sbatch_cmd, run_cmd, stdout=subprocess.PIPE)
         success_msg = 'Submitted batch job'
         stdout = result.stdout.decode('utf-8')
         assert success_msg in stdout, result.stderr

@@ -123,12 +123,17 @@ class Testing(unittest.TestCase):
         )
         self.assertEqual(self.script, str(slurm))
 
-    def test_13_output_env_vars(self):
-        self.assertEqual(Slurm.SLURM_ARRAY_TASK_ID, r'$SLURM_ARRAY_TASK_ID')
-
     def test_12_output_env_vars_object(self):
         slurm = Slurm()
         self.assertEqual(slurm.SLURM_ARRAY_TASK_ID, r'$SLURM_ARRAY_TASK_ID')
+
+    def test_13_output_env_vars(self):
+        self.assertEqual(Slurm.SLURM_ARRAY_TASK_ID, r'$SLURM_ARRAY_TASK_ID')
+
+    def test_14_srun_returncode(self):
+        slurm = Slurm()
+        code = slurm.srun('echo Hello!')
+        self.assertEqual(code, 0)
 
 
 if __name__ == '__main__':

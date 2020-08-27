@@ -26,7 +26,7 @@ sbatch << EOF
 #SBATCH --job-name            name
 #SBATCH --output              %A_%a.out
 
-python demo.py \$SLURM_ARRAY_TAKSK_ID
+python demo.py \$SLURM_ARRAY_TASK_ID
 
 EOF
 ```
