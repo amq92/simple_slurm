@@ -1,11 +1,9 @@
 import argparse
 import os
 import subprocess
-import sys
 
 
 shebang = '#!/bin/sh'
-sbatch_cmd = 'sbatch'
 
 
 class Slurm():
@@ -101,32 +99,14 @@ class Slurm():
                 script_cmd += f'#SBATCH --{key:<19} {value}\n'
         return script_cmd
 
-    def run(self, slurm_cmd: str, run_cmd: str,
-            convert: bool = True, **kwargs) -> subprocess.CompletedProcess:
-        '''Execute the given commands with the generated sbatch script included
-        as a 'here document' code block.
-
-        This function employs the following syntax:
-            $ slurm_cmd << EOF
-            > bash_script
-            > run_command
-            >EOF
-
-        For such reason if any bash variable is employed by the 'run_command',
-        the '$' should be scaped into '\$'. This behavior is default, set
-        'convert' to False to disable it.
+    def srun(self, run_cmd: str) -> int:
+        '''Run the srun command with all the (previously) set arguments and
+        the provided command to in 'run_cmd'.
         '''
-        return subprocess.run(
-            '\n'.join([slurm_cmd + ' << EOF',
-                       self.arguments,
-                       run_cmd.replace('$', '\\$') if convert else run_cmd,
-                       'EOF']),
-            shell=True,
-            **kwargs
+        args = (
+            f'--{k}={v}'
+            for (k, v) in vars(self.namespace).items() if v is not None
         )
-
-    def srun(self, run_cmd: str, convert: bool = True) -> int:
-        args = (f'--{k}={v}' for (k, v) in vars(self.namespace).items() if v is not None)
         cmd = ' '.join(('srun', *args, run_cmd))
 
         result = subprocess.run(cmd, shell=True, check=True)
@@ -140,9 +120,23 @@ class Slurm():
         bash variables be scaped. This behavior is default, set 'convert'
         to False to disable it.
 
-        See run for more details.
+        This function employs the following syntax:
+            $ slurm_cmd << EOF
+            > bash_script
+            > run_command
+            >EOF
+
+        For such reason if any bash variable is employed by the 'run_command',
+        the '$' should be scaped into '\$'. This behavior is default, set
+        'convert' to False to disable it.
         '''
-        result = self.run(sbatch_cmd, run_cmd, stdout=subprocess.PIPE)
+        cmd = '\n'.join((
+            'sbatch << EOF',
+            self.arguments,
+            run_cmd.replace('$', '\\$') if convert else run_cmd,
+            'EOF',
+        ))
+        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
         success_msg = 'Submitted batch job'
         stdout = result.stdout.decode('utf-8')
         assert success_msg in stdout, result.stderr
