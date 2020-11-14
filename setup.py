@@ -6,7 +6,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='simple-slurm',
-    version='0.1.5',
+    version='0.1.6',
     author='Arturo Mendoza',
     description='A simple Python wrapper for Slurm with flexibility in mind.',
     long_description=long_description,

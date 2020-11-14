@@ -3,9 +3,6 @@ import os
 import subprocess
 
 
-shebang = '#!/bin/sh'
-
-
 class Slurm():
     '''Simple Slurm class for running sbatch commands.
 
@@ -45,7 +42,7 @@ class Slurm():
 
     def __str__(self) -> str:
         '''Print the generated sbatch script.'''
-        return self.arguments
+        return self.arguments()
 
     def __repr__(self) -> str:
         '''Print the argparse namespace.'''
@@ -89,30 +86,37 @@ class Slurm():
         for key, value in kwargs.items():
             self._add_one_argument(key, value)
 
-    @property
-    def arguments(self) -> str:
+    @staticmethod
+    def _valid_key(key: str) -> str:
+        '''Long arguments (for slurm) constructed with '-' have been internally
+         represented with '_' (for Python). Correct for this in the output.
+        '''
+        return key.replace('_', '-')
+
+    def arguments(self, shell: str = '/bin/sh') -> str:
         '''Generate the sbatch script for the current state of arguments.'''
-        script_cmd = shebang + '\n\n'
-        for key, value in vars(self.namespace).items():
-            if value is not None:
-                key = key.replace('_', '-')
-                script_cmd += f'#SBATCH --{key:<19} {value}\n'
+        args = (
+            f'#SBATCH --{self._valid_key(k):<19} {v}'
+            for k, v in vars(self.namespace).items() if v is not None
+        )
+        script_cmd = '\n'.join((f'#!{shell}', '', *args, ''))
         return script_cmd
 
-    def srun(self, run_cmd: str) -> int:
+    def srun(self, run_cmd: str, srun_cmd: str = 'srun') -> int:
         '''Run the srun command with all the (previously) set arguments and
         the provided command to in 'run_cmd'.
         '''
         args = (
-            f'--{k}={v}'
-            for (k, v) in vars(self.namespace).items() if v is not None
+            f'--{self._valid_key(k)}={v}'
+            for k, v in vars(self.namespace).items() if v is not None
         )
-        cmd = ' '.join(('srun', *args, run_cmd))
+        cmd = ' '.join((srun_cmd, *args, run_cmd))
 
         result = subprocess.run(cmd, shell=True, check=True)
         return result.returncode
 
-    def sbatch(self, run_cmd: str, convert: bool = True) -> int:
+    def sbatch(self, run_cmd: str, convert: bool = True,
+               sbatch_cmd: str = 'sbatch', shell: str = '/bin/sh') -> int:
         '''Run the sbatch command with all the (previously) set arguments and
         the provided command to in 'run_cmd'.
 
@@ -131,8 +135,8 @@ class Slurm():
         'convert' to False to disable it.
         '''
         cmd = '\n'.join((
-            'sbatch << EOF',
-            self.arguments,
+            sbatch_cmd + ' << EOF',
+            self.arguments(shell),
             run_cmd.replace('$', '\\$') if convert else run_cmd,
             'EOF',
         ))
