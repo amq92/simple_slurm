@@ -115,7 +115,7 @@ class Slurm():
         result = subprocess.run(cmd, shell=True, check=True)
         return result.returncode
 
-    def sbatch(self, run_cmd: str, convert: bool = True,
+    def sbatch(self, run_cmd: str, convert: bool = True, verbose: bool = True,
                sbatch_cmd: str = 'sbatch', shell: str = '/bin/sh') -> int:
         '''Run the sbatch command with all the (previously) set arguments and
         the provided command to in 'run_cmd'.
@@ -144,8 +144,9 @@ class Slurm():
         success_msg = 'Submitted batch job'
         stdout = result.stdout.decode('utf-8')
         assert success_msg in stdout, result.stderr
-        job_id = int(stdout.replace(success_msg, ''))
-        print(success_msg, job_id)
+        if verbose:
+            print(stdout)
+        job_id = int(stdout.split(' ')[3])
         return job_id
 
 
@@ -158,6 +159,7 @@ def create_setter_method(key: str):
     '''Creates the setter method for the given 'key' attribute of a Slurm
     object
     '''
+
     def set_key(self, value):
         self.add_arguments(key, value)
     set_key.__name__ = f'set_{key}'
@@ -182,4 +184,4 @@ def read_simple_txt(path: str) -> list:
     '''Simple function for reading the txt files.'''
     __pkg_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(__pkg_path, path), 'r') as f:
-        return [[w.strip() for w in l.split(',')] for l in f.readlines()]
+        return [[wrd.strip() for wrd in ln.split(',')] for ln in f.readlines()]
