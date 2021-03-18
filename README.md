@@ -12,7 +12,7 @@ slurm = Slurm(
     dependency=dict(after=65541, afterok=34987),
     output=f'{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out',
 )
-slurm.sbatch('python demo.py ' + Slurm.SLURM_ARRAY_TAKSK_ID)
+slurm.sbatch('python demo.py ' + Slurm.SLURM_ARRAY_TASK_ID)
 ```
 The above snippet is equivalent to running the following command:
 
