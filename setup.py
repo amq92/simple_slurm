@@ -4,13 +4,13 @@ with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 setup(
-    name='simple-slurm',
+    name='simple_slurm',
     version='0.2.0',
     author='Arturo Mendoza',
     description='A simple Python wrapper for Slurm with flexibility in mind.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/amq92/simple-slurm',
+    url='https://github.com/amq92/simple_slurm',
     packages=find_packages(),
     package_data={'': ['*.txt']},
     include_package_data=True,

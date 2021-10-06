@@ -53,12 +53,12 @@ See https://slurm.schedmd.com/sbatch.html for details on the commands.
 From PyPI
 
 ```bash
-pip install simple-slurm
+pip install simple_slurm
 ```
 
 From git
 ```bash
-pip install git+https://github.com/amq92/simple-slurm.git
+pip install git+https://github.com/amq92/simple_slurm.git
 ```
 
 
