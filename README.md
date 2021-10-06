@@ -1,6 +1,13 @@
-# Simple Slurm
-
-A simple Python wrapper for Slurm with flexibility in mind.
+<h1 align="center">Simple Slurm</h1>
+<p align="center">A simple Python wrapper for Slurm with flexibility in mind<p>
+<p align="center">
+<a href="https://github.com/amq92/simple_slurm/actions/workflows/python-publish-pypi.yml">
+    <img src="https://github.com/amq92/simple_slurm/actions/workflows/python-publish-pypi.yml/badge.svg" alt="Publish to PyPI" />
+</a>
+<a href="https://github.com/amq92/simple_slurm/actions/workflows/python-package-conda.yml">
+    <img src="https://github.com/amq92/simple_slurm/actions/workflows/python-package-conda.yml/badge.svg" alt="Publish to Conda" />
+</a>
+</p>
 
 ```python
 from simple_slurm import Slurm
@@ -54,6 +61,12 @@ From PyPI
 
 ```bash
 pip install simple_slurm
+```
+
+From Conda
+
+```bash
+conda install -c arturo.mendoza.quispe simple_slurm
 ```
 
 From git
