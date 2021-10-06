@@ -1,18 +1,17 @@
-import setuptools
-
+from setuptools import find_packages, setup
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
 
-setuptools.setup(
+setup(
     name='simple-slurm',
-    version='0.1.9',
+    version='0.2.0',
     author='Arturo Mendoza',
     description='A simple Python wrapper for Slurm with flexibility in mind.',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/amq92/simple-slurm',
-    packages=setuptools.find_packages(),
+    packages=find_packages(),
     package_data={'': ['*.txt']},
     include_package_data=True,
     classifiers=[
@@ -21,4 +20,5 @@ setuptools.setup(
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.6',
+    license='GNU Affero General Public License v3',
 )
