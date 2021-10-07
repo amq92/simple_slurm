@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='simple_slurm',
-    version='0.2.1',
+    version='0.2.2',
     author='Arturo Mendoza',
     description='A simple Python wrapper for Slurm with flexibility in mind.',
     long_description=long_description,
@@ -13,7 +13,6 @@ setup(
     url='https://github.com/amq92/simple_slurm',
     packages=find_packages(),
     package_data={'': ['*.txt']},
-    include_package_data=True,
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: GNU Affero General Public License v3',
