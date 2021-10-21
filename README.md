@@ -7,6 +7,9 @@
 <a href="https://github.com/amq92/simple_slurm/actions/workflows/python-package-conda.yml">
     <img src="https://github.com/amq92/simple_slurm/actions/workflows/python-package-conda.yml/badge.svg" alt="Publish to Conda" />
 </a>
+<a href="https://github.com/amq92/simple_slurm/actions/workflows/python-run-tests.yml">
+    <img src="https://github.com/amq92/simple_slurm/actions/workflows/python-run-tests.yml/badge.svg" alt="Run Python Tests" />
+</a>
 </p>
 
 ```python
