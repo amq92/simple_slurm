@@ -1,3 +1,6 @@
+import contextlib
+import io
+import os
 import shutil
 import subprocess
 import unittest
@@ -135,16 +138,50 @@ class Testing(unittest.TestCase):
 
     def test_14_srun_returncode(self):
         slurm = Slurm()
-        if shutil.which('slurm') is None:
-            with patch('subprocess.run', fake_subprocess_run):
-                code = slurm.srun('echo Hello!')
-        else:
+        if shutil.which('srun') is not None:
             code = slurm.srun('echo Hello!')
+        else:
+            with patch('subprocess.run', subprocess_srun):
+                code = slurm.srun('echo Hello!')
         self.assertEqual(code, 0)
 
+    def test_15_sbatch_execution(self):
+        with io.StringIO() as buffer:
+            with contextlib.redirect_stdout(buffer):
+                slurm = Slurm()
+                if shutil.which('sbatch') is not None:
+                    job_id = slurm.sbatch('echo Hello!')
+                else:
+                    with patch('subprocess.run', subprocess_sbatch):
+                        job_id = slurm.sbatch('echo Hello!')
+                stdout = buffer.getvalue()
 
-def fake_subprocess_run(*args, **kwargs):
+        out_file = f'slurm-{job_id}.out'
+        while True:  # wait for job to finalize
+            if os.path.isfile(out_file):
+                break
+        with open(out_file, 'r') as fid:
+            contents = fid.read()
+        os.remove(out_file)
+
+        self.assertIsInstance(job_id, int)
+        self.assertIn('Hello!', contents)
+        self.assertIn(f'Submitted batch job {job_id}', stdout)
+
+
+def subprocess_srun(*args, **kwargs):
+    print('Hello!!!')
     return subprocess.CompletedProcess(*args, returncode=0)
+
+
+def subprocess_sbatch(*args, **kwargs):
+    job_id = 1234
+    out_file = f'slurm-{job_id}.out'
+    with open(out_file, 'w') as fid:
+        fid.write('Hello!!!\n')
+    stdout = f'Submitted batch job {job_id}'
+    return subprocess.CompletedProcess(*args, returncode=1,
+                                       stdout=stdout.encode('utf-8'))
 
 
 if __name__ == '__main__':
