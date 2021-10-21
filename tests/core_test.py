@@ -1,4 +1,7 @@
+import shutil
+import subprocess
 import unittest
+from unittest.mock import patch
 
 from simple_slurm import Slurm
 
@@ -132,8 +135,16 @@ class Testing(unittest.TestCase):
 
     def test_14_srun_returncode(self):
         slurm = Slurm()
-        code = slurm.srun('echo Hello!')
+        if shutil.which('slurm') is None:
+            with patch('subprocess.run', fake_subprocess_run):
+                code = slurm.srun('echo Hello!')
+        else:
+            code = slurm.srun('echo Hello!')
         self.assertEqual(code, 0)
+
+
+def fake_subprocess_run(*args, **kwargs):
+    return subprocess.CompletedProcess(*args, returncode=0)
 
 
 if __name__ == '__main__':
