@@ -85,6 +85,7 @@ class Slurm():
             self._add_one_argument(key, value)
         for key, value in kwargs.items():
             self._add_one_argument(key, value)
+        return self
 
     @staticmethod
     def _valid_key(key: str) -> str:
@@ -161,7 +162,8 @@ def create_setter_method(key: str):
     '''
 
     def set_key(self, value):
-        self.add_arguments(key, value)
+        return self.add_arguments(key, value)
+
     set_key.__name__ = f'set_{key}'
     set_key.__doc__ = f'Setter method for the argument "{key}"'
     setattr(Slurm, set_key.__name__, set_key)
