@@ -3,6 +3,7 @@ import io
 import os
 import shutil
 import subprocess
+import datetime
 import unittest
 from unittest.mock import patch
 
@@ -18,6 +19,7 @@ class Testing(unittest.TestCase):
 #SBATCH --dependency          after:65541,afterok:34987
 #SBATCH --job-name            name
 #SBATCH --output              %A_%a.out
+#SBATCH --time                1-02:03:04
 '''
 
     def test_01_args_short(self):
@@ -27,6 +29,7 @@ class Testing(unittest.TestCase):
             '-J', 'name',
             '-d', 'after:65541,afterok:34987',
             '-o', r'%A_%a.out',
+            '-t', '1-02:03:04',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -37,6 +40,7 @@ class Testing(unittest.TestCase):
             '--job_name', 'name',
             '--dependency', 'after:65541,afterok:34987',
             '--output', r'%A_%a.out',
+            '--time', '1-02:03:04',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -47,6 +51,7 @@ class Testing(unittest.TestCase):
             'job_name', 'name',
             'dependency', 'after:65541,afterok:34987',
             'output', r'%A_%a.out',
+            'time', '1-02:03:04',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -57,6 +62,7 @@ class Testing(unittest.TestCase):
             job_name='name',
             dependency='after:65541,afterok:34987',
             output=r'%A_%a.out',
+            time='1-02:03:04',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -68,6 +74,7 @@ class Testing(unittest.TestCase):
             job_name='name',
             dependency='after:65541,afterok:34987',
             output=r'%A_%a.out',
+            time='1-02:03:04',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -78,6 +85,7 @@ class Testing(unittest.TestCase):
         slurm.add_arguments(job_name='name')
         slurm.add_arguments(dependency='after:65541,afterok:34987')
         slurm.add_arguments(output=r'%A_%a.out')
+        slurm.add_arguments(time='1-02:03:04')
         self.assertEqual(self.script, str(slurm))
 
     def test_07_setter_methods(self):
@@ -87,6 +95,7 @@ class Testing(unittest.TestCase):
         slurm.set_job_name('name')
         slurm.set_dependency('after:65541,afterok:34987')
         slurm.set_output(r'%A_%a.out')
+        slurm.set_time('1-02:03:04')
         self.assertEqual(self.script, str(slurm))
 
     def test_08_parse_range(self):
@@ -96,6 +105,7 @@ class Testing(unittest.TestCase):
             job_name='name',
             dependency='after:65541,afterok:34987',
             output=r'%A_%a.out',
+            time='1-02:03:04',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -106,6 +116,7 @@ class Testing(unittest.TestCase):
             job_name='name',
             dependency='after:65541,afterok:34987',
             output=r'%A_%a.out',
+            time='1-02:03:04',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -116,6 +127,7 @@ class Testing(unittest.TestCase):
             job_name='name',
             dependency=dict(after=65541, afterok=34987),
             output=r'%A_%a.out',
+            time='1-02:03:04',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -126,6 +138,7 @@ class Testing(unittest.TestCase):
             job_name='name',
             dependency=dict(after=65541, afterok=34987),
             output=f'{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out',
+            time='1-02:03:04',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -167,6 +180,18 @@ class Testing(unittest.TestCase):
         self.assertIsInstance(job_id, int)
         self.assertIn('Hello!', contents)
         self.assertIn(f'Submitted batch job {job_id}', stdout)
+
+    def test_16_parse_timedelta(self):
+        slurm = Slurm(
+            array=range(3, 12),
+            cpus_per_task=15,
+            job_name='name',
+            dependency=dict(after=65541, afterok=34987),
+            output=r'%A_%a.out',
+            time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
+        )
+        self.assertEqual(self.script, str(slurm))
+
 
 
 def subprocess_srun(*args, **kwargs):
