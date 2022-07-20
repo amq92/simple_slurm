@@ -1,7 +1,8 @@
 import argparse
 import os
 import subprocess
-
+import datetime
+import math
 
 class Slurm():
     '''Simple Slurm class for running sbatch commands.
@@ -61,6 +62,10 @@ class Slurm():
                 into 'after:65541,afterok:34987'.
                 Useful for arguments that have multiple 'sub-arguments',
                 such as when declaring dependencies.
+            3) A `datetime.timedelta` object:
+                Converts timedelta(days=1, hours=2, minutes=3, seconds=4)
+                into '1-02:03:04'.
+                Useful for arguments for time durations. 
         '''
         # special cases: range
         if isinstance(value, range):
@@ -70,6 +75,11 @@ class Slurm():
         # special cases: dict
         if isinstance(value, dict):
             value = str(value).replace(' ', '').replace('\'', '')[1:-1]
+
+        # special cases: timedelta
+        if isinstance(value, datetime.timedelta):
+            value = format_timedelta(value, 
+                time_format="{days}-{hours2}:{minutes2}:{seconds2}")
 
         # add to parser
         key_value_pair = [fmt_key(key), fmt_value(value)]
@@ -187,3 +197,47 @@ def read_simple_txt(path: str) -> list:
     __pkg_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(__pkg_path, path), 'r') as f:
         return [[wrd.strip() for wrd in ln.split(',')] for ln in f.readlines()]
+
+
+def format_timedelta(value,
+                     time_format="{days} days, {hours2}:{minutes2}:{seconds2}"):
+    '''Format a datetie.timedelta. Ref: https://stackoverflow.com/a/30339105. '''
+    if hasattr(value, 'seconds'):
+        seconds = value.seconds + value.days * 24 * 3600
+    else:
+        seconds = int(value)
+
+    seconds_total = seconds
+
+    minutes = int(math.floor(seconds / 60))
+    minutes_total = minutes
+    seconds -= minutes * 60
+
+    hours = int(math.floor(minutes / 60))
+    hours_total = hours
+    minutes -= hours * 60
+
+    days = int(math.floor(hours / 24))
+    days_total = days
+    hours -= days * 24
+
+    years = int(math.floor(days / 365))
+    years_total = years
+    days -= years * 365
+
+    return time_format.format(
+      **{
+          'seconds': seconds,
+          'seconds2': str(seconds).zfill(2),
+          'minutes': minutes,
+          'minutes2': str(minutes).zfill(2),
+          'hours': hours,
+          'hours2': str(hours).zfill(2),
+          'days': days,
+          'years': years,
+          'seconds_total': seconds_total,
+          'minutes_total': minutes_total,
+          'hours_total': hours_total,
+          'days_total': days_total,
+          'years_total': years_total,
+      })
