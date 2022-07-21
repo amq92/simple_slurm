@@ -1,8 +1,9 @@
 import argparse
-import os
-import subprocess
 import datetime
 import math
+import os
+import subprocess
+
 
 class Slurm():
     '''Simple Slurm class for running sbatch commands.
@@ -78,8 +79,8 @@ class Slurm():
 
         # special cases: timedelta
         if isinstance(value, datetime.timedelta):
-            value = format_timedelta(value, 
-                time_format="{days}-{hours2}:{minutes2}:{seconds2}")
+            value = format_timedelta(value,
+                                     time_format="{days}-{hours2}:{minutes2}:{seconds2}")
 
         # add to parser
         key_value_pair = [fmt_key(key), fmt_value(value)]
@@ -199,9 +200,8 @@ def read_simple_txt(path: str) -> list:
         return [[wrd.strip() for wrd in ln.split(',')] for ln in f.readlines()]
 
 
-def format_timedelta(value,
-                     time_format="{days} days, {hours2}:{minutes2}:{seconds2}"):
-    '''Format a datetie.timedelta. Ref: https://stackoverflow.com/a/30339105. '''
+def format_timedelta(value, time_format='{days} days, {hours2}:{minutes2}:{seconds2}'):
+    '''Format a datetime.timedelta (https://stackoverflow.com/a/30339105) '''
     if hasattr(value, 'seconds'):
         seconds = value.seconds + value.days * 24 * 3600
     else:
@@ -226,18 +226,18 @@ def format_timedelta(value,
     days -= years * 365
 
     return time_format.format(
-      **{
-          'seconds': seconds,
-          'seconds2': str(seconds).zfill(2),
-          'minutes': minutes,
-          'minutes2': str(minutes).zfill(2),
-          'hours': hours,
-          'hours2': str(hours).zfill(2),
-          'days': days,
-          'years': years,
-          'seconds_total': seconds_total,
-          'minutes_total': minutes_total,
-          'hours_total': hours_total,
-          'days_total': days_total,
-          'years_total': years_total,
-      })
+        **{
+            'seconds': seconds,
+            'seconds2': str(seconds).zfill(2),
+            'minutes': minutes,
+            'minutes2': str(minutes).zfill(2),
+            'hours': hours,
+            'hours2': str(hours).zfill(2),
+            'days': days,
+            'years': years,
+            'seconds_total': seconds_total,
+            'minutes_total': minutes_total,
+            'hours_total': hours_total,
+            'days_total': days_total,
+            'years_total': years_total,
+        })

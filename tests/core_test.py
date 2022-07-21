@@ -1,9 +1,9 @@
 import contextlib
+import datetime
 import io
 import os
 import shutil
 import subprocess
-import datetime
 import unittest
 from unittest.mock import patch
 
@@ -191,7 +191,6 @@ class Testing(unittest.TestCase):
             time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
         )
         self.assertEqual(self.script, str(slurm))
-
 
 
 def subprocess_srun(*args, **kwargs):
