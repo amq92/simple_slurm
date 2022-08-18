@@ -13,14 +13,18 @@
 </p>
 
 ```python
+import datetime
+
 from simple_slurm import Slurm
 
 slurm = Slurm(
     array=range(3, 12),
     cpus_per_task=15,
-    job_name='name',
     dependency=dict(after=65541, afterok=34987),
+    gres=['gpu:kepler:2', 'gpu:tesla:2', 'mps:400'],
+    job_name='name',
     output=f'{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out',
+    time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
 )
 slurm.sbatch('python demo.py ' + Slurm.SLURM_ARRAY_TASK_ID)
 ```
@@ -33,21 +37,18 @@ sbatch << EOF
 #SBATCH --array               3-11
 #SBATCH --cpus-per-task       15
 #SBATCH --dependency          after:65541,afterok:34987
+#SBATCH --gres                gpu:kepler:2,gpu:tesla:2,mps:400
 #SBATCH --job-name            name
 #SBATCH --output              %A_%a.out
+#SBATCH --time                1-02:03:04
 
 python demo.py \$SLURM_ARRAY_TASK_ID
 
 EOF
 ```
-See https://slurm.schedmd.com/sbatch.html for details on the commands.
-
-> To inspect the generated script `print(slurm)` before the `sbatch` call
-
-
-
 
 ## Contents
++ [Introduction](#introduction)
 + [Installation instructions](#installation-instructions)
 + [Many syntaxes available](#many-syntaxes-available)
     - [Using configuration files](#using-configuration-files)
@@ -57,6 +58,39 @@ See https://slurm.schedmd.com/sbatch.html for details on the commands.
     - [Output Environment Variables](#output-environment-variables)
 
 
+
+## Introduction
+
+The [`sbatch`](https://slurm.schedmd.com/sbatch.html) and [`srun`](https://slurm.schedmd.com/srun.html) commands in [Slurm](https://slurm.schedmd.com/overview.html) allow submitting parallel jobs into a Linux cluster in the form of batch scripts that follow a certain structure.
+
+The goal of this library is to provide a simple wrapper for these functions (`sbatch` and `srun`) so that Python code can be used for constructing and launching the aforementioned batch script.
+
+Indeed, the generated batch script can be shown by printing the `Slurm` object:
+
+```python
+from slurm import Slurm
+
+slurm = Slurm(array=range(3, 12), job_name='name')
+print(slurm)
+```
+```bash
+>> #!/bin/sh
+>> 
+>> #SBATCH --array               3-11
+>> #SBATCH --job-name            name
+```
+
+Then, the job can be launched with either command:
+```python
+slurm.srun('echo hello!')
+slurm.sbatch('echo hello!')
+```
+```bash
+>> Submitted batch job 34987
+```
+
+While both commands are quite similar, [`srun`](https://slurm.schedmd.com/srun.html) will wait for the job completion, while [`sbatch`](https://slurm.schedmd.com/sbatch.html) will launch and disconnect from the jobs.
+> More information can be found in [Slurm's Quick Start Guide](https://slurm.schedmd.com/quickstart.html) and in [here](https://stackoverflow.com/questions/43767866/slurm-srun-vs-sbatch-and-their-parameters).
 
 ## Installation instructions
 
@@ -101,10 +135,23 @@ You can either keep a command-line-like syntax or a more Python-like one
 ```python
 slurm = Slurm()
 slurm.set_dependency('after:65541,afterok:34987')
+slurm.set_dependency(['after:65541', 'afterok:34987'])
 slurm.set_dependency(dict(after=65541, afterok=34987))
 ```
-Each one the available arguments have their own setter method
-(ex. `set_dependency`).
+
+All the possible arguments have their own setter methods
+(ex. `set_array`, `set_dependency`, `set_job_name`).
+
+Please note that hyphenated arguments, such as `--job-name`, need to be underscored
+(so to comply with Python syntax and be coherent).
+
+```python
+slurm = Slurm('--job_name', 'name')
+slurm = Slurm(job_name='name')
+
+# slurm = Slurm('--job-name', 'name')  # NOT VALID
+# slurm = Slurm(job-name='name')       # NOT VALID
+```
 
 
 
@@ -174,7 +221,7 @@ slurm.sbatch('python demo.py ' + slurm.SLURM_ARRAY_JOB_ID)
 ```
 
 This example would result in output files of the form `65541_15.out`.
-Here the job submission ID is `65541`, and this output file corresponds to the submission number `15` in the job array. Moreover this index is passed to the Python code `demo.py` as an argument.
+Here the job submission ID is `65541`, and this output file corresponds to the submission number `15` in the job array. Moreover, this index is passed to the Python code `demo.py` as an argument.
 
 > Note that they can be accessed either as `Slurm.<name>` or `slurm.<name>`, here `slurm` is an instance of the `Slurm` class.
 
