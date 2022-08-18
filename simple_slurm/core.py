@@ -3,6 +3,7 @@ import datetime
 import math
 import os
 import subprocess
+from typing import Iterable
 
 
 class Slurm():
@@ -51,38 +52,7 @@ class Slurm():
         return repr(vars(self.namespace))
 
     def _add_one_argument(self, key: str, value: str):
-        '''Parse the given key-value pair (the argument is given in key).
-
-        This function handles some special cases for the type of value:
-            1) A 'range' object:
-                Converts range(3, 15) into '3-14'.
-                Useful for defining job arrays using a Python syntax.
-                Note the correct form of handling the last element.
-            2) A 'dict' object:
-                Converts dict(after=65541, afterok=34987)
-                into 'after:65541,afterok:34987'.
-                Useful for arguments that have multiple 'sub-arguments',
-                such as when declaring dependencies.
-            3) A `datetime.timedelta` object:
-                Converts timedelta(days=1, hours=2, minutes=3, seconds=4)
-                into '1-02:03:04'.
-                Useful for arguments for time durations. 
-        '''
-        # special cases: range
-        if isinstance(value, range):
-            start, stop, step = value.start, value.stop - 1, value.step
-            value = f'{start}-{stop}' + ('' if value.step == 1 else f':{step}')
-
-        # special cases: dict
-        if isinstance(value, dict):
-            value = str(value).replace(' ', '').replace('\'', '')[1:-1]
-
-        # special cases: timedelta
-        if isinstance(value, datetime.timedelta):
-            value = format_timedelta(value,
-                                     time_format="{days}-{hours2}:{minutes2}:{seconds2}")
-
-        # add to parser
+        '''Parse the given key-value pair (the argument is given in key).'''
         key_value_pair = [fmt_key(key), fmt_value(value)]
         self.parser.parse_args(key_value_pair, namespace=self.namespace)
 
@@ -188,8 +158,43 @@ def fmt_key(key: str) -> str:
     return key
 
 
-def fmt_value(value: str) -> str:
-    '''Maintain correct formatting for values in key-value pairs'''
+def fmt_value(value) -> str:
+    '''Maintain correct formatting for values in key-value pairs
+    This function handles some special cases for the type of value:
+        1) A 'range' object:
+            Converts range(3, 15) into '3-14'.
+            Useful for defining job arrays using a Python syntax.
+            Note the correct form of handling the last element.
+        2) A 'dict' object:
+            Converts dict(after=65541, afterok=34987)
+            into 'after:65541,afterok:34987'.
+            Useful for arguments that have multiple 'sub-arguments',
+            such as when declaring dependencies.
+        3) A `datetime.timedelta` object:
+            Converts timedelta(days=1, hours=2, minutes=3, seconds=4)
+            into '1-02:03:04'.
+            Useful for arguments involving time durations.
+        4) An `iterable` object:
+            Will recursively format each item
+            Useful for defining lists of parameters
+    '''
+    if isinstance(value, str):
+        pass
+
+    elif isinstance(value, range):
+        start, stop, step = value.start, value.stop - 1, value.step
+        value = f'{start}-{stop}' + ('' if value.step == 1 else f':{step}')
+
+    elif isinstance(value, dict):
+        value = ','.join((f'{k}:{fmt_value(v)}' for k, v in value.items()))
+
+    elif isinstance(value, datetime.timedelta):
+        time_format = '{days}-{hours2}:{minutes2}:{seconds2}'
+        value = format_timedelta(value, time_format=time_format)
+
+    elif isinstance(value, Iterable):
+        value = ','.join((fmt_value(item) for item in value))
+
     return str(value).strip()
 
 
@@ -200,7 +205,7 @@ def read_simple_txt(path: str) -> list:
         return [[wrd.strip() for wrd in ln.split(',')] for ln in f.readlines()]
 
 
-def format_timedelta(value, time_format='{days} days, {hours2}:{minutes2}:{seconds2}'):
+def format_timedelta(value: datetime.timedelta, time_format: str):
     '''Format a datetime.timedelta (https://stackoverflow.com/a/30339105) '''
     if hasattr(value, 'seconds'):
         seconds = value.seconds + value.days * 24 * 3600
