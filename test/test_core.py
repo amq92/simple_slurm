@@ -17,6 +17,7 @@ class Testing(unittest.TestCase):
 #SBATCH --array               3-11
 #SBATCH --cpus-per-task       15
 #SBATCH --dependency          after:65541,afterok:34987
+#SBATCH --gres                gpu:kepler:2,gpu:tesla:2,mps:400
 #SBATCH --job-name            name
 #SBATCH --output              %A_%a.out
 #SBATCH --time                1-02:03:04
@@ -30,6 +31,7 @@ class Testing(unittest.TestCase):
             '-d', 'after:65541,afterok:34987',
             '-o', r'%A_%a.out',
             '-t', '1-02:03:04',
+            '--gres', 'gpu:kepler:2,gpu:tesla:2,mps:400',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -41,6 +43,7 @@ class Testing(unittest.TestCase):
             '--dependency', 'after:65541,afterok:34987',
             '--output', r'%A_%a.out',
             '--time', '1-02:03:04',
+            '--gres', 'gpu:kepler:2,gpu:tesla:2,mps:400',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -52,6 +55,7 @@ class Testing(unittest.TestCase):
             'dependency', 'after:65541,afterok:34987',
             'output', r'%A_%a.out',
             'time', '1-02:03:04',
+            'gres', 'gpu:kepler:2,gpu:tesla:2,mps:400',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -63,6 +67,7 @@ class Testing(unittest.TestCase):
             dependency='after:65541,afterok:34987',
             output=r'%A_%a.out',
             time='1-02:03:04',
+            gres='gpu:kepler:2,gpu:tesla:2,mps:400',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -75,6 +80,7 @@ class Testing(unittest.TestCase):
             dependency='after:65541,afterok:34987',
             output=r'%A_%a.out',
             time='1-02:03:04',
+            gres='gpu:kepler:2,gpu:tesla:2,mps:400',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -86,6 +92,7 @@ class Testing(unittest.TestCase):
         slurm.add_arguments(dependency='after:65541,afterok:34987')
         slurm.add_arguments(output=r'%A_%a.out')
         slurm.add_arguments(time='1-02:03:04')
+        slurm.add_arguments(gres='gpu:kepler:2,gpu:tesla:2,mps:400')
         self.assertEqual(self.script, str(slurm))
 
     def test_07_setter_methods(self):
@@ -96,6 +103,7 @@ class Testing(unittest.TestCase):
         slurm.set_dependency('after:65541,afterok:34987')
         slurm.set_output(r'%A_%a.out')
         slurm.set_time('1-02:03:04')
+        slurm.set_gres('gpu:kepler:2,gpu:tesla:2,mps:400')
         self.assertEqual(self.script, str(slurm))
 
     def test_08_parse_range(self):
@@ -106,6 +114,7 @@ class Testing(unittest.TestCase):
             dependency='after:65541,afterok:34987',
             output=r'%A_%a.out',
             time='1-02:03:04',
+            gres='gpu:kepler:2,gpu:tesla:2,mps:400',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -117,6 +126,7 @@ class Testing(unittest.TestCase):
             dependency='after:65541,afterok:34987',
             output=r'%A_%a.out',
             time='1-02:03:04',
+            gres='gpu:kepler:2,gpu:tesla:2,mps:400',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -128,6 +138,7 @@ class Testing(unittest.TestCase):
             dependency=dict(after=65541, afterok=34987),
             output=r'%A_%a.out',
             time='1-02:03:04',
+            gres='gpu:kepler:2,gpu:tesla:2,mps:400',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -139,6 +150,7 @@ class Testing(unittest.TestCase):
             dependency=dict(after=65541, afterok=34987),
             output=f'{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out',
             time='1-02:03:04',
+            gres='gpu:kepler:2,gpu:tesla:2,mps:400',
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -189,6 +201,19 @@ class Testing(unittest.TestCase):
             dependency=dict(after=65541, afterok=34987),
             output=r'%A_%a.out',
             time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
+            gres='gpu:kepler:2,gpu:tesla:2,mps:400',
+        )
+        self.assertEqual(self.script, str(slurm))
+
+    def test_17_parse_iterator(self):
+        slurm = Slurm(
+            array=[range(3, 12)],
+            cpus_per_task=15,
+            job_name='name',
+            dependency=dict(after=65541, afterok=34987),
+            output=r'%A_%a.out',
+            time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
+            gres=('gpu:kepler:2', dict(gpu=dict(tesla=2), mps=400)),
         )
         self.assertEqual(self.script, str(slurm))
 

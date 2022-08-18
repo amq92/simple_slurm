@@ -21,4 +21,4 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
     - name: Run tests with unittest
-      run: python -m unittest discover -s tests/ -p '*_test.py'  -v 
+      run: python -m unittest -v 
