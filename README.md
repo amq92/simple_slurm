@@ -103,7 +103,7 @@ pip install simple_slurm
 From Conda
 
 ```bash
-conda install -c arturo.mendoza.quispe simple_slurm
+conda install -c conda-forge simple_slurm
 ```
 
 From git
