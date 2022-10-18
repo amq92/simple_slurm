@@ -68,7 +68,7 @@ The goal of this library is to provide a simple wrapper for these functions (`sb
 Indeed, the generated batch script can be shown by printing the `Slurm` object:
 
 ```python
-from slurm import Slurm
+from simple_slurm import Slurm
 
 slurm = Slurm(array=range(3, 12), job_name='name')
 print(slurm)
