@@ -22,6 +22,7 @@ slurm = Slurm(
     cpus_per_task=15,
     dependency=dict(after=65541, afterok=34987),
     gres=['gpu:kepler:2', 'gpu:tesla:2', 'mps:400'],
+    ignore_pbs=True,
     job_name='name',
     output=f'{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out',
     time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
@@ -38,6 +39,7 @@ sbatch << EOF
 #SBATCH --cpus-per-task       15
 #SBATCH --dependency          after:65541,afterok:34987
 #SBATCH --gres                gpu:kepler:2,gpu:tesla:2,mps:400
+#SBATCH --ignore-pbs
 #SBATCH --job-name            name
 #SBATCH --output              %A_%a.out
 #SBATCH --time                1-02:03:04
@@ -163,7 +165,6 @@ slurm.add_arguments(ignore_pbs='')
 slurm.set_wait(False)
 print(slurm)
 ```
-
 ```bash
 #!/bin/sh
 
