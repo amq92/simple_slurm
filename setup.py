@@ -24,4 +24,5 @@ setup(
     ],
     python_requires='>=3.6',
     license='GNU Affero General Public License v3',
+    entry_points=dict(console_scripts=['simple_slurm=simple_slurm.cli:cli']),
 )
