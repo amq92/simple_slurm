@@ -198,11 +198,14 @@ def fmt_value(value) -> str:
     return str(value).strip()
 
 
-def read_simple_txt(path: str) -> list:
+def read_simple_txt(path: str, split: bool = True) -> list:
     '''Simple function for reading the txt files.'''
     __pkg_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(__pkg_path, path), 'r') as f:
-        return [[wrd.strip() for wrd in ln.split(',')] for ln in f.readlines()]
+    with open(os.path.join(__pkg_path, path), 'r') as fid:
+        lines = fid.read().split('\n')
+        if not split:
+            return lines
+        return [[wrd.strip() for wrd in ln.split(',')] for ln in lines]
 
 
 def format_timedelta(value: datetime.timedelta, time_format: str):
