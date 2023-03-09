@@ -52,6 +52,7 @@ EOF
 + [Installation instructions](#installation-instructions)
 + [Many syntaxes available](#many-syntaxes-available)
     - [Using configuration files](#using-configuration-files)
+    - [Using the command line](#using-the-command-line)
 + [Job dependencies](#job-dependencies)
 + [Additional features](#additional-features)
     - [Filename Patterns](#filename-patterns)
@@ -198,6 +199,27 @@ slurm.set_array(range(NUMBER_OF_SIMULATIONS))
 ```
 
 The job can be updated according to the *dynamic* project needs (ex. `NUMBER_OF_SIMULATIONS`).
+
+
+
+
+### Using the command line
+
+For simpler dispatch jobs, a comand line entry point is also made available.
+
+```bash
+simple_slurm [OPTIONS] "COMMAND_TO_RUN_WITH_SBATCH"
+```
+
+As such, both of these `python` and `bash` calls are equivalent.
+
+```python
+slurm = Slurm(partition='compute.p', output='slurm.log', ignore_pbs=True)
+slurm.sbatch('echo \$HOSTNAME')
+```
+```bash
+simple_slurm --partition=compute.p --output slurm.log --ignore_pbs "echo \$HOSTNAME"
+```
 
 
 
