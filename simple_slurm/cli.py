@@ -8,8 +8,7 @@ def cli():
     __sbatch = 'COMMAND_TO_RUN_WITH_SBATCH'
 
     # initialize parser
-    description = 'A simple Python wrapper for Slurm with flexibility in mind.'
-    parser = argparse.ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(add_help=False)
 
     # add arguments into argparser
     arguments = read_simple_txt('arguments.txt')
