@@ -153,6 +153,24 @@ slurm = Slurm(job_name='name')
 # slurm = Slurm(job-name='name')       # NOT VALID
 ```
 
+Moreover, boolean arguments such as `--contiguous`, `--ignore_pbs` or `--overcommit` 
+can be activated with `True` or an empty string.
+
+```python
+slurm = Slurm('--contiguous', True)
+slurm.add_arguments(ignore_pbs='')
+slurm.set_wait(False)
+print(slurm)
+```
+
+```bash
+#!/bin/sh
+
+#SBATCH --contiguous
+#SBATCH --ignore-pbs
+```
+
+
 
 
 ### Using configuration files
