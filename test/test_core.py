@@ -18,6 +18,7 @@ class Testing(unittest.TestCase):
 #SBATCH --cpus-per-task       15
 #SBATCH --dependency          after:65541,afterok:34987
 #SBATCH --gres                gpu:kepler:2,gpu:tesla:2,mps:400
+#SBATCH --ignore-pbs          
 #SBATCH --job-name            name
 #SBATCH --output              %A_%a.out
 #SBATCH --time                1-02:03:04
@@ -32,6 +33,7 @@ class Testing(unittest.TestCase):
             '-o', r'%A_%a.out',
             '-t', '1-02:03:04',
             '--gres', 'gpu:kepler:2,gpu:tesla:2,mps:400',
+            '--ignore_pbs', True,
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -44,6 +46,7 @@ class Testing(unittest.TestCase):
             '--output', r'%A_%a.out',
             '--time', '1-02:03:04',
             '--gres', 'gpu:kepler:2,gpu:tesla:2,mps:400',
+            '--ignore_pbs', True,
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -56,6 +59,7 @@ class Testing(unittest.TestCase):
             'output', r'%A_%a.out',
             'time', '1-02:03:04',
             'gres', 'gpu:kepler:2,gpu:tesla:2,mps:400',
+            'ignore_pbs', True,
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -68,6 +72,7 @@ class Testing(unittest.TestCase):
             output=r'%A_%a.out',
             time='1-02:03:04',
             gres='gpu:kepler:2,gpu:tesla:2,mps:400',
+            ignore_pbs=True,
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -81,6 +86,7 @@ class Testing(unittest.TestCase):
             output=r'%A_%a.out',
             time='1-02:03:04',
             gres='gpu:kepler:2,gpu:tesla:2,mps:400',
+            ignore_pbs=True,
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -93,6 +99,7 @@ class Testing(unittest.TestCase):
         slurm.add_arguments(output=r'%A_%a.out')
         slurm.add_arguments(time='1-02:03:04')
         slurm.add_arguments(gres='gpu:kepler:2,gpu:tesla:2,mps:400')
+        slurm.add_arguments(ignore_pbs=True)
         self.assertEqual(self.script, str(slurm))
 
     def test_07_setter_methods(self):
@@ -104,6 +111,7 @@ class Testing(unittest.TestCase):
         slurm.set_output(r'%A_%a.out')
         slurm.set_time('1-02:03:04')
         slurm.set_gres('gpu:kepler:2,gpu:tesla:2,mps:400')
+        slurm.set_ignore_pbs(True)
         self.assertEqual(self.script, str(slurm))
 
     def test_08_parse_range(self):
@@ -115,6 +123,7 @@ class Testing(unittest.TestCase):
             output=r'%A_%a.out',
             time='1-02:03:04',
             gres='gpu:kepler:2,gpu:tesla:2,mps:400',
+            ignore_pbs=True,
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -127,6 +136,7 @@ class Testing(unittest.TestCase):
             output=r'%A_%a.out',
             time='1-02:03:04',
             gres='gpu:kepler:2,gpu:tesla:2,mps:400',
+            ignore_pbs=True,
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -139,6 +149,7 @@ class Testing(unittest.TestCase):
             output=r'%A_%a.out',
             time='1-02:03:04',
             gres='gpu:kepler:2,gpu:tesla:2,mps:400',
+            ignore_pbs=True,
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -151,6 +162,7 @@ class Testing(unittest.TestCase):
             output=f'{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out',
             time='1-02:03:04',
             gres='gpu:kepler:2,gpu:tesla:2,mps:400',
+            ignore_pbs=True,
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -202,6 +214,7 @@ class Testing(unittest.TestCase):
             output=r'%A_%a.out',
             time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
             gres='gpu:kepler:2,gpu:tesla:2,mps:400',
+            ignore_pbs=True,
         )
         self.assertEqual(self.script, str(slurm))
 
@@ -214,6 +227,21 @@ class Testing(unittest.TestCase):
             output=r'%A_%a.out',
             time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
             gres=('gpu:kepler:2', dict(gpu=dict(tesla=2), mps=400)),
+            ignore_pbs=True,
+        )
+        self.assertEqual(self.script, str(slurm))
+
+    def test_18_false_boolean_arguments(self):
+        slurm = Slurm(
+            array=[range(3, 12)],
+            cpus_per_task=15,
+            job_name='name',
+            dependency=dict(after=65541, afterok=34987),
+            output=r'%A_%a.out',
+            time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
+            gres=('gpu:kepler:2', dict(gpu=dict(tesla=2), mps=400)),
+            ignore_pbs=True,
+            wait=False,
         )
         self.assertEqual(self.script, str(slurm))
 

@@ -5,6 +5,8 @@ import os
 import subprocess
 from typing import Iterable
 
+IGNORE_BOOLEAN = 'IGNORE_BOOLEAN'
+
 
 class Slurm():
     '''Simple Slurm class for running sbatch commands.
@@ -53,8 +55,9 @@ class Slurm():
 
     def _add_one_argument(self, key: str, value: str):
         '''Parse the given key-value pair (the argument is given in key).'''
-        key_value_pair = [fmt_key(key), fmt_value(value)]
-        self.parser.parse_args(key_value_pair, namespace=self.namespace)
+        key, value = fmt_key(key), fmt_value(value)
+        if value is not IGNORE_BOOLEAN:
+            self.parser.parse_args([key, value], namespace=self.namespace)
 
     def add_arguments(self, *args, **kwargs):
         '''Parse the given key-value pairs.
@@ -194,6 +197,9 @@ def fmt_value(value) -> str:
 
     elif isinstance(value, Iterable):
         value = ','.join((fmt_value(item) for item in value))
+
+    elif isinstance(value, bool):
+        value = '' if value else IGNORE_BOOLEAN
 
     return str(value).strip()
 
