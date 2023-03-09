@@ -174,7 +174,7 @@ class Testing(unittest.TestCase):
         self.assertEqual(Slurm.SLURM_ARRAY_TASK_ID, r'$SLURM_ARRAY_TASK_ID')
 
     def test_14_srun_returncode(self):
-        slurm = Slurm()
+        slurm = Slurm(contiguous=True)
         if shutil.which('srun') is not None:
             code = slurm.srun('echo Hello!')
         else:
@@ -185,7 +185,7 @@ class Testing(unittest.TestCase):
     def test_15_sbatch_execution(self):
         with io.StringIO() as buffer:
             with contextlib.redirect_stdout(buffer):
-                slurm = Slurm()
+                slurm = Slurm(contiguous=True)
                 if shutil.which('sbatch') is not None:
                     job_id = slurm.sbatch('echo Hello!')
                 else:
