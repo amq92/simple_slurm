@@ -1,11 +1,15 @@
 from setuptools import find_packages, setup
 
-with open('README.md', 'r') as fh:
-    long_description = fh.read()
+with open('README.md', 'r') as fid:
+    long_description = fid.read()
+
+with open('simple_slurm/__about__.py', 'r') as fid:
+    __version__ = None
+    exec(fid.read())  # loads __version__
 
 setup(
     name='simple_slurm',
-    version='0.2.5',
+    version=__version__,
     author='Arturo Mendoza',
     description='A simple Python wrapper for Slurm with flexibility in mind.',
     long_description=long_description,
