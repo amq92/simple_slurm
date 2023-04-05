@@ -44,6 +44,8 @@ class Slurm():
 
         # add provided arguments in constructor
         self.add_arguments(*args, **kwargs)
+        
+        self.run_cmd = ""
 
     def __str__(self) -> str:
         '''Print the generated sbatch script.'''
@@ -70,6 +72,12 @@ class Slurm():
         for key, value in kwargs.items():
             self._add_one_argument(key, value)
         return self
+    
+    def add_cmd(self, cmd: str):
+        '''Add a new command to run_cmd'''
+        if len(cmd):
+            self.run_cmd += cmd+'\n'
+        return self.run_cmd
 
     @staticmethod
     def _valid_key(key: str) -> str:
@@ -100,10 +108,10 @@ class Slurm():
         result = subprocess.run(cmd, shell=True, check=True)
         return result.returncode
 
-    def sbatch(self, run_cmd: str, convert: bool = True, verbose: bool = True,
+    def sbatch(self, run_cmd: str = '', convert: bool = True, verbose: bool = True,
                sbatch_cmd: str = 'sbatch', shell: str = '/bin/sh') -> int:
         '''Run the sbatch command with all the (previously) set arguments and
-        the provided command to in 'run_cmd'.
+        the provided command (& previously provided command) to in 'run_cmd'.
 
         This function employs the 'here document' syntax, which requires that
         bash variables be scaped. This behavior is default, set 'convert'
@@ -119,10 +127,11 @@ class Slurm():
         the '$' should be scaped into '\$'. This behavior is default, set
         'convert' to False to disable it.
         '''
+        self.add_cmd(run_cmd)
         cmd = '\n'.join((
             sbatch_cmd + ' << EOF',
             self.arguments(shell),
-            run_cmd.replace('$', '\\$') if convert else run_cmd,
+            self.run_cmd.replace('$', '\\$') if convert else self.run_cmd,
             'EOF',
         ))
         result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
