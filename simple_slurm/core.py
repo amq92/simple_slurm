@@ -45,15 +45,15 @@ class Slurm():
         # add provided arguments in constructor
         self.add_arguments(*args, **kwargs)
         
-        self.run_cmd = ""
+        self.run_commands = []
 
     def __str__(self) -> str:
         '''Print the generated sbatch script.'''
-        return self.arguments()
+        return self.script()
 
     def __repr__(self) -> str:
         '''Print the argparse namespace.'''
-        return repr(vars(self.namespace))
+        return repr(vars(self.namespace))+f'\nrun_cmd:{self.run_commands}'
 
     def _add_one_argument(self, key: str, value: str):
         '''Parse the given key-value pair (the argument is given in key).'''
@@ -76,8 +76,11 @@ class Slurm():
     def add_cmd(self, cmd: str):
         '''Add a new command to run_cmd'''
         if len(cmd):
-            self.run_cmd += cmd+'\n'
-        return self.run_cmd
+            self.run_commands.append(cmd)
+        return self
+    
+    def reset_cmd(self):
+        self.run_cmd = ''
 
     @staticmethod
     def _valid_key(key: str) -> str:
@@ -87,13 +90,26 @@ class Slurm():
         return key.replace('_', '-')
 
     def arguments(self, shell: str = '/bin/sh') -> str:
-        '''Generate the sbatch script for the current state of arguments.'''
+        '''Generate the arguments sbatch script for the current state'''
         args = (
             f'#SBATCH --{self._valid_key(k):<19} {v}'
             for k, v in vars(self.namespace).items() if v is not None
         )
-        script_cmd = '\n'.join((f'#!{shell}', '', *args, ''))
-        return script_cmd
+        script_arguments = '\n'.join((f'#!{shell}', '', *args, ''))
+        return script_arguments
+    
+    def commands(self, convert: bool = True):
+        '''Generate the commands sbatch script for the current state'''
+        command = ''
+        for cmd in self.run_commands:
+            command += cmd+'\n'
+        
+        return command.replace('$', '\\$') if convert else command
+    
+    def script(self, shell: str = '/bin/sh', convert: bool = True):
+        '''Generate the sbatch script for the current arguments & commands'''
+        script = '\n'.join((self.arguments(shell), self.commands(convert)))
+        return script
 
     def srun(self, run_cmd: str, srun_cmd: str = 'srun') -> int:
         '''Run the srun command with all the (previously) set arguments and
@@ -130,8 +146,7 @@ class Slurm():
         self.add_cmd(run_cmd)
         cmd = '\n'.join((
             sbatch_cmd + ' << EOF',
-            self.arguments(shell),
-            self.run_cmd.replace('$', '\\$') if convert else self.run_cmd,
+            self.script(shell, convert),           
             'EOF',
         ))
         result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
