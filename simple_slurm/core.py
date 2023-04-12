@@ -80,7 +80,7 @@ class Slurm():
         return self
     
     def reset_cmd(self):
-        self.run_cmd = ''
+        self.run_commands = []
 
     @staticmethod
     def _valid_key(key: str) -> str:
