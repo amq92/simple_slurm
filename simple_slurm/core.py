@@ -5,6 +5,9 @@ import os
 import subprocess
 from typing import Iterable
 
+from simple_slurm.squeue import SlurmSqueueWrapper
+from simple_slurm.scancel import SlurmScancelWrapper
+
 IGNORE_BOOLEAN = 'IGNORE_BOOLEAN'
 
 
@@ -25,6 +28,8 @@ class Slurm():
         # initialize parser
         self.namespace = Namespace()
         self.parser = argparse.ArgumentParser()
+        squeue = SlurmSqueueWrapper()
+        scancel = SlurmScancelWrapper()
 
         # add arguments into argparser
         for keys in read_simple_txt('arguments.txt'):
