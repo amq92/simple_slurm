@@ -308,3 +308,32 @@ SLURM_ARRAY_JOB_ID     | job array's master job id number
 ...                    | ...
 
 See [https://slurm.schedmd.com/sbatch.html](https://slurm.schedmd.com/sbatch.html#lbAK) for a complete list.
+
+
+### squeue
+
+You can use the built-in squeue to retrieve information about running jobs, or even filter jobs according to their name
+
+```python
+from simple_slurm import Slurm
+
+slurm = Slurm(**yaml.safe_load(open('slurm_default.yml', 'r')))
+slurm.squeue.update_squeue()
+slurm.squeue.display_jobs()
+```
+
+### scancel
+
+Invokes the scancel command.  It provides two methods scancel.cancel_job() which sends a straightforward scancel
+and scancel.signal_job() which attempts to send a sigterm first.
+
+Example below cancels the first found running job from the user
+```python
+from simple_slurm import Slurm
+
+slurm = Slurm(**yaml.safe_load(open('slurm_default.yml', 'r')))
+slurm.squeue.update_squeue()
+for job_id in slurm.squeue.jobs:
+    slurm.scancel.cancel_job(job_id)
+    break
+```
