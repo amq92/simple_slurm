@@ -23,6 +23,12 @@ class Testing(unittest.TestCase):
 #SBATCH --output              %A_%a.out
 #SBATCH --time                1-02:03:04
 '''
+    job_file_test_19 = r'''#!/bin/sh
+
+#SBATCH --contiguous          
+
+echo Hello!
+EOF'''
 
     def test_01_args_short(self):
         slurm = Slurm(
@@ -245,6 +251,41 @@ class Testing(unittest.TestCase):
         )
         self.assertEqual(self.script, str(slurm))
 
+    def test_19_sbatch_execution_with_job_file(self):
+
+        job_file = 'script.sh'
+        with io.StringIO() as buffer:
+            with contextlib.redirect_stdout(buffer):
+                slurm = Slurm(contiguous=True)
+                if shutil.which('sbatch') is not None:
+                    job_id = slurm.sbatch('echo Hello!',
+                                          job_file=job_file)
+                else:
+                    with patch('subprocess.run', subprocess_sbatch):
+                        job_id = slurm.sbatch('echo Hello!',
+                                              job_file=job_file)
+                stdout = buffer.getvalue()
+
+        self.assertIsInstance(job_id, int)
+
+        out_file = f'slurm-{job_id}.out'
+        while True:  # wait for job to finalize
+            if os.path.isfile(out_file):
+                break
+        # Assert the script was written correctly
+        with open(job_file, 'r') as fid:
+            job_contents = fid.read()
+        os.remove(job_file)
+
+        self.assertEqual(job_contents, self.job_file_test_19)
+
+        # Assert the script was executed correctly
+        with open(out_file, 'r') as fid:
+            contents = fid.read()
+        os.remove(out_file)
+
+        self.assertIn('Hello!', contents)
+        self.assertIn(f'Submitted batch job {job_id}', stdout)
 
 def subprocess_srun(*args, **kwargs):
     print('Hello!!!')
