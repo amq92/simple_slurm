@@ -27,7 +27,8 @@ slurm = Slurm(
     output=f'{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out',
     time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
 )
-slurm.sbatch('python demo.py ' + Slurm.SLURM_ARRAY_TASK_ID)
+slurm.add_cmd('module load python')
+slurm.sbatch('python demo.py', Slurm.SLURM_ARRAY_TASK_ID)
 ```
 The above snippet is equivalent to running the following command:
 
@@ -44,6 +45,7 @@ sbatch << EOF
 #SBATCH --output              %A_%a.out
 #SBATCH --time                1-02:03:04
 
+module load python
 python demo.py \$SLURM_ARRAY_TASK_ID
 
 EOF
@@ -94,6 +96,28 @@ slurm.sbatch('echo hello!')
 
 While both commands are quite similar, [`srun`](https://slurm.schedmd.com/srun.html) will wait for the job completion, while [`sbatch`](https://slurm.schedmd.com/sbatch.html) will launch and disconnect from the jobs.
 > More information can be found in [Slurm's Quick Start Guide](https://slurm.schedmd.com/quickstart.html) and in [here](https://stackoverflow.com/questions/43767866/slurm-srun-vs-sbatch-and-their-parameters).
+
+
+Moreover, multi-line commands can be added using `add_cmd` and reset with `reset_cmd`.
+The `sbatch` directive will call `add_cmd` before launching the job.
+```python
+slurm.add_cmd('echo hello for the first time!')
+slurm.add_cmd('echo hello for the second time!')
+slurm.sbatch('echo hello for the last time!')
+slurm.reset_cmd()
+slurm.sbatch('echo hello again!')
+```
+This results in two outputs
+```
+hello for the first time!
+hello for the second time!
+hello for the last time!
+```
+```
+hello again!
+```
+
+
 
 ## Installation instructions
 
