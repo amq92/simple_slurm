@@ -24,6 +24,11 @@ class Testing(unittest.TestCase):
 #SBATCH --time                1-02:03:04
 '''
 
+    commands = r'''module load python
+python run.py 100
+echo "done"
+'''
+
     def test_01_args_short(self):
         slurm = Slurm(
             '-a', '3-11',
@@ -244,6 +249,41 @@ class Testing(unittest.TestCase):
             wait=False,
         )
         self.assertEqual(self.script, str(slurm))
+
+    def test_19_add_cmd_single(self):
+        slurm = Slurm(
+            '-a', '3-11',
+            '-c', '15',
+            '-J', 'name',
+            '-d', 'after:65541,afterok:34987',
+            '-o', r'%A_%a.out',
+            '-t', '1-02:03:04',
+            '--gres', 'gpu:kepler:2,gpu:tesla:2,mps:400',
+            '--ignore_pbs', True,
+        )
+        slurm.add_cmd('\n'.join((
+            'module load python',
+            'python run.py 100',
+            'echo "done"',
+        )))
+        self.assertEqual(self.script + '\n' + self.commands, str(slurm))
+
+    def test_19_add_cmd_multiple(self):
+        slurm = Slurm(
+            '-a', '3-11',
+            '-c', '15',
+            '-J', 'name',
+            '-d', 'after:65541,afterok:34987',
+            '-o', r'%A_%a.out',
+            '-t', '1-02:03:04',
+            '--gres', 'gpu:kepler:2,gpu:tesla:2,mps:400',
+            '--ignore_pbs', True,
+        )
+        slurm.add_cmd('module load python')
+        slurm.add_cmd('python run.py 100')
+        slurm.add_cmd('echo "done"')
+        self.assertEqual(self.script + '\n' + self.commands, str(slurm))
+
 
 
 def subprocess_srun(*args, **kwargs):
