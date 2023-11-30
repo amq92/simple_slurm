@@ -51,9 +51,14 @@ python demo.py \$SLURM_ARRAY_TASK_ID
 EOF
 ```
 
+Get it using either one of :
+```bash
+pip install simple_slurm
+conda install -c conda-forge simple_slurm
+```
+
 ## Contents
 + [Introduction](#introduction)
-+ [Installation instructions](#installation-instructions)
 + [Many syntaxes available](#many-syntaxes-available)
     - [Using configuration files](#using-configuration-files)
     - [Using the command line](#using-the-command-line)
@@ -115,27 +120,6 @@ hello for the last time!
 ```
 ```
 hello again!
-```
-
-
-
-## Installation instructions
-
-From PyPI
-
-```bash
-pip install simple_slurm
-```
-
-From Conda
-
-```bash
-conda install -c conda-forge simple_slurm
-```
-
-From git
-```bash
-pip install git+https://github.com/amq92/simple_slurm.git
 ```
 
 
