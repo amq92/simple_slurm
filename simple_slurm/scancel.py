@@ -17,6 +17,7 @@ class SlurmScancelWrapper:
 
     def cancel_job(self, job_id):
         '''Sends a straightforward scancel to a job'''
+        job_id = str(job_id)
         result = subprocess.run(["scancel", job_id],
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if result.returncode != 0:
@@ -27,6 +28,7 @@ class SlurmScancelWrapper:
         If sent again to the same job, attempts a sigkill instead
         if that fails as well, involkes scancel without term arguments
         '''
+        job_id = str(job_id)
         self.prune_old_jobs()
         signal = "--signal=TERM"
         if job_id not in self.sigmtems:
