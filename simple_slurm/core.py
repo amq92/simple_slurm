@@ -28,8 +28,8 @@ class Slurm():
         # initialize parser
         self.namespace = Namespace()
         self.parser = argparse.ArgumentParser()
-        squeue = SlurmSqueueWrapper()
-        scancel = SlurmScancelWrapper()
+        self.squeue = SlurmSqueueWrapper()
+        self.scancel = SlurmScancelWrapper()
 
         # add arguments into argparser
         for keys in read_simple_txt('arguments.txt'):
