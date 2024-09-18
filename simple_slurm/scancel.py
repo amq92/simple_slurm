@@ -48,9 +48,9 @@ class SlurmScancelWrapper:
                     del self.sigmtems[job_id]
 
 
-    def cancel_all(self, job_id):
+    def cancel_all(self):
         '''Cancels all jobs from the current user'''
-        result = subprocess.run(["scancel", "--me", job_id],
+        result = subprocess.run(["scancel", "--me"],
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if result.returncode != 0:
             raise RuntimeError(f"Error cancelling job: {result.stderr.strip()}")
