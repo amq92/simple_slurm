@@ -137,7 +137,7 @@ class Slurm():
 
     def sbatch(self, *run_cmd: str, convert: bool = True,
                verbose: bool = True, sbatch_cmd: str = 'sbatch',
-               shell: str = '/bin/sh') -> int:
+               shell: str = '/bin/sh', job_file: str = None) -> int:
         '''Run the sbatch command with all the (previously) set arguments and
         the provided command in 'run_cmd' alongside with the previously set
         commands using 'add_cmd'.
@@ -160,13 +160,22 @@ class Slurm():
         For such reason if any bash variable is employed by the 'run_command',
         the '$' should be scaped into '\$'. This behavior is default, set
         'convert' to False to disable it.
+
+        If the argument 'job_file' is used, the script will be written to the 
+        designated file, and then the command `sbatch <job_file>` will be 
+        executed.
         '''
         self.add_cmd(*run_cmd)
-        cmd = '\n'.join((
-            sbatch_cmd + ' << EOF',
-            self.script(shell, convert),
-            'EOF',
-        ))
+        if job_file is not None:
+            with open(job_file, 'w') as fid:
+                fid.write(self.script(shell, convert))
+            cmd = sbatch_cmd + ' ' + job_file
+        else:
+            cmd = '\n'.join((
+                sbatch_cmd + ' << EOF',
+                self.script(shell, convert),
+                'EOF',
+            ))
         result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
         success_msg = 'Submitted batch job'
         stdout = result.stdout.decode('utf-8')
