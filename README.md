@@ -27,7 +27,8 @@ slurm = Slurm(
     output=f'{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out',
     time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
 )
-slurm.sbatch('python demo.py ' + Slurm.SLURM_ARRAY_TASK_ID)
+slurm.add_cmd('module load python')
+slurm.sbatch('python demo.py', Slurm.SLURM_ARRAY_TASK_ID)
 ```
 The above snippet is equivalent to running the following command:
 
@@ -44,14 +45,20 @@ sbatch << EOF
 #SBATCH --output              %A_%a.out
 #SBATCH --time                1-02:03:04
 
+module load python
 python demo.py \$SLURM_ARRAY_TASK_ID
 
 EOF
 ```
 
+Get it using either one of :
+```bash
+pip install simple_slurm
+conda install -c conda-forge simple_slurm
+```
+
 ## Contents
 + [Introduction](#introduction)
-+ [Installation instructions](#installation-instructions)
 + [Many syntaxes available](#many-syntaxes-available)
     - [Using configuration files](#using-configuration-files)
     - [Using the command line](#using-the-command-line)
@@ -95,23 +102,24 @@ slurm.sbatch('echo hello!')
 While both commands are quite similar, [`srun`](https://slurm.schedmd.com/srun.html) will wait for the job completion, while [`sbatch`](https://slurm.schedmd.com/sbatch.html) will launch and disconnect from the jobs.
 > More information can be found in [Slurm's Quick Start Guide](https://slurm.schedmd.com/quickstart.html) and in [here](https://stackoverflow.com/questions/43767866/slurm-srun-vs-sbatch-and-their-parameters).
 
-## Installation instructions
 
-From PyPI
-
-```bash
-pip install simple_slurm
+Moreover, multi-line commands can be added using `add_cmd` and reset with `reset_cmd`.
+The `sbatch` directive will call `add_cmd` before launching the job.
+```python
+slurm.add_cmd('echo hello for the first time!')
+slurm.add_cmd('echo hello for the second time!')
+slurm.sbatch('echo hello for the last time!')
+slurm.reset_cmd()
+slurm.sbatch('echo hello again!')
 ```
-
-From Conda
-
-```bash
-conda install -c conda-forge simple_slurm
+This results in two outputs
 ```
-
-From git
-```bash
-pip install git+https://github.com/amq92/simple_slurm.git
+hello for the first time!
+hello for the second time!
+hello for the last time!
+```
+```
+hello again!
 ```
 
 
@@ -308,3 +316,32 @@ SLURM_ARRAY_JOB_ID     | job array's master job id number
 ...                    | ...
 
 See [https://slurm.schedmd.com/sbatch.html](https://slurm.schedmd.com/sbatch.html#lbAK) for a complete list.
+
+
+### squeue
+
+You can use the built-in squeue to retrieve information about running jobs, or even filter jobs according to their name
+
+```python
+from simple_slurm import Slurm
+
+slurm = Slurm(**yaml.safe_load(open('slurm_default.yml', 'r')))
+slurm.squeue.update_squeue()
+slurm.squeue.display_jobs()
+```
+
+### scancel
+
+Invokes the scancel command.  It provides two methods scancel.cancel_job() which sends a straightforward scancel
+and scancel.signal_job() which attempts to send a sigterm first.
+
+Example below cancels the first found running job from the user
+```python
+from simple_slurm import Slurm
+
+slurm = Slurm(**yaml.safe_load(open('slurm_default.yml', 'r')))
+slurm.squeue.update_squeue()
+for job_id in slurm.squeue.jobs:
+    slurm.scancel.cancel_job(job_id)
+    break
+```
