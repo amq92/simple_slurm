@@ -70,6 +70,7 @@ open_mode
 output,o
 overcommit,O
 oversubscribe,s
+parsable
 partition,p
 power
 prefer

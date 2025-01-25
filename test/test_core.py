@@ -211,7 +211,7 @@ echo "done"
         with open(out_file, 'r') as fid:
             contents = fid.read()
         os.remove(out_file)
-
+        self.assertFalse(slurm.is_parsable)
         self.assertIsInstance(job_id, int)
         self.assertIn('Hello!', contents)
         self.assertIn(f'Submitted batch job {job_id}', stdout)
@@ -326,6 +326,28 @@ echo "done"
         slurm.add_cmd('echo "done"')
         self.assertEqual(self.script + '\n' + self.commands, str(slurm))
 
+    def test_20_parsable_sbatch_execution(self):
+        with io.StringIO() as buffer:
+            with contextlib.redirect_stdout(buffer):
+                slurm = Slurm(contiguous=True, parsable=True)
+                if shutil.which('sbatch') is not None:
+                    job_id = slurm.sbatch('echo Hello!')
+                else:
+                    with patch('subprocess.run', subprocess_sbatch_parsable):
+                        job_id = slurm.sbatch('echo Hello!')
+                stdout = buffer.getvalue()
+
+        out_file = f'slurm-{job_id}.out'
+        while True:  # wait for job to finalize
+            if os.path.isfile(out_file):
+                break
+        with open(out_file, 'r') as fid:
+            contents = fid.read()
+        os.remove(out_file)
+        self.assertTrue(slurm.is_parsable)
+        self.assertIsInstance(job_id, int)
+        self.assertIn('Hello!', contents)
+        self.assertEqual(f'{job_id}\n', stdout)
 
 
 def subprocess_srun(*args, **kwargs):
@@ -340,6 +362,15 @@ def subprocess_sbatch(*args, **kwargs):
         fid.write('Hello!!!\n')
     stdout = f'Submitted batch job {job_id}'
     return subprocess.CompletedProcess(*args, returncode=1,
+                                       stdout=stdout.encode('utf-8'))
+
+def subprocess_sbatch_parsable(*args, **kwargs):
+    job_id = 1234
+    out_file = f'slurm-{job_id}.out'
+    with open(out_file, 'w') as fid:
+        fid.write('Hello!!!\n')
+    stdout = str(job_id)
+    return subprocess.CompletedProcess(*args, returncode=0,
                                        stdout=stdout.encode('utf-8'))
 
 

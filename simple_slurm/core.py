@@ -134,6 +134,9 @@ class Slurm():
 
         result = subprocess.run(cmd, shell=True, check=True)
         return result.returncode
+    @property
+    def is_parsable(self) -> bool:
+        return getattr(self.namespace, 'parsable', None) is not None
 
     def sbatch(self, *run_cmd: str, convert: bool = True,
                verbose: bool = True, sbatch_cmd: str = 'sbatch',
@@ -177,12 +180,24 @@ class Slurm():
                 'EOF',
             ))
         result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
-        success_msg = 'Submitted batch job'
-        stdout = result.stdout.decode('utf-8')
-        assert success_msg in stdout, result.stderr
+        # init for clarity
+        job_id = None
+        stdout = ''
+        if self.is_parsable:
+            # gather the first line from stdout
+            stdout = result.stdout.decode().strip()
+            # parsable will be of format job_id[:cluster]
+            # ref: https://slurm.schedmd.com/sbatch.html#OPT_parsable
+            job_id = int(stdout.split(':')[0])
+            assert result.returncode == 0, result.stderr
+        else:
+            success_msg = 'Submitted batch job'
+            stdout = result.stdout.decode()
+            assert success_msg in stdout, result.stderr
+            job_id = int(stdout.split(' ')[3])
+        assert job_id is not None, 'this should never happen, assert for linter'
         if verbose:
             print(stdout)
-        job_id = int(stdout.split(' ')[3])
         return job_id
 
 
