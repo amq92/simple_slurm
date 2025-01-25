@@ -6,28 +6,32 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-class SlurmScancelWrapper:
 
+class SlurmScancelWrapper:
     sigmtems = {}
     sigmkills = {}
     stale_delta = None
 
-    def __init__(self, staledelta = timedelta(minutes=30)):
+    def __init__(self, staledelta=timedelta(minutes=30)):
         self.stale_delta = staledelta
 
     def cancel_job(self, job_id):
-        '''Sends a straightforward scancel to a job'''
+        """Sends a straightforward scancel to a job"""
         job_id = str(job_id)
-        result = subprocess.run(["scancel", job_id],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run(
+            ["scancel", job_id],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
         if result.returncode != 0:
             raise RuntimeError(f"Error cancelling job: {result.stderr.strip()}")
 
     def signal_job(self, job_id):
-        '''First time it is sent to a job, tries send a sigtem to the job id
+        """First time it is sent to a job, tries send a sigtem to the job id
         If sent again to the same job, attempts a sigkill instead
         if that fails as well, involkes scancel without term arguments
-        '''
+        """
         job_id = str(job_id)
         self.prune_old_jobs()
         signal = "--signal=TERM"
@@ -41,22 +45,29 @@ class SlurmScancelWrapper:
         elif job_id in self.sigmtems:
             signal = ""
             logger.warning(f"Failed to SIGKILL {job_id}. Terminating!")
-        result = subprocess.run(["scancel", signal, job_id],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run(
+            ["scancel", signal, job_id],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
         if result.returncode != 0:
             raise RuntimeError(f"Error cancelling job: {result.stderr.strip()}")
 
     def prune_old_jobs(self):
-        '''Clears out signals information older than self.stale_delta'''
+        """Clears out signals information older than self.stale_delta"""
         for signals in [self.sigmtems, self.sigmkills]:
             for job_id in signals:
                 if self.sigmtems[job_id] < datetime.now() - self.stale_delta:
                     del self.sigmtems[job_id]
 
-
     def cancel_all(self):
-        '''Cancels all jobs from the current user'''
-        result = subprocess.run(["scancel", "--me"],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        """Cancels all jobs from the current user"""
+        result = subprocess.run(
+            ["scancel", "--me"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
         if result.returncode != 0:
             raise RuntimeError(f"Error cancelling job: {result.stderr.strip()}")

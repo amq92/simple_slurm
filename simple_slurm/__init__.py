@@ -7,5 +7,5 @@ from .core import Slurm
 _ = Slurm()
 
 __all__ = [
-    '__version__',
+    "__version__",
 ]
