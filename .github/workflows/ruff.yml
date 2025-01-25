@@ -20,9 +20,9 @@ jobs:
       - name: Install Ruff
         run: pip install ruff
       - name: Run Ruff
-        uses: astral-sh/ruff-action@v3.0.1
+        uses: astral-sh/ruff-action@v3
         with:
-          args: --fix --show-fixes .
+          args: "format --check"
       - name: Commit fixes (if any)
         if: success()
         run: |
