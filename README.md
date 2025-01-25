@@ -66,6 +66,7 @@ conda install -c conda-forge simple_slurm
 + [Additional features](#additional-features)
     - [Filename Patterns](#filename-patterns)
     - [Output Environment Variables](#output-environment-variables)
++ [Project growth](#project-growth)
 
 
 
@@ -345,3 +346,6 @@ for job_id in slurm.squeue.jobs:
     slurm.scancel.cancel_job(job_id)
     break
 ```
+
+## Project growth
+[![Star History Chart](https://api.star-history.com/svg?repos=amq92/simple_slurm&type=Date)](https://star-history.com/#amq92/simple_slurm&Date)
