@@ -10,9 +10,6 @@
 <a href="https://github.com/amq92/simple_slurm/actions/workflows/python-run-tests.yml">
     <img src="https://github.com/amq92/simple_slurm/actions/workflows/python-run-tests.yml/badge.svg" alt="Run Python Tests" />
 </a>
-<a href="LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" />
-</a>
 </p>
 
 ```python
@@ -70,8 +67,6 @@ EOF
    - [Monitoring Jobs with `squeue`](#monitoring-jobs-with-squeue)
    - [Canceling Jobs with `scancel`](#canceling-jobs-with-scancel)
 + [Error Handling](#error-handling)
-+ [Contributing](#contributing)
-+ [License](#license)
 + [Project Growth](#project-growth)
 
 
@@ -406,18 +401,6 @@ usage: simple_slurm [OPTIONS] "COMMAND_TO_RUN_WITH_SBATCH"
 simple_slurm: error: unrecognized arguments: --invalid_argument=value
 ```
 
-
-## Contributing
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix.
-3. Submit a pull request with a detailed description of your changes.
-
-
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Project growth
 [![Star History Chart](https://api.star-history.com/svg?repos=amq92/simple_slurm&type=Date)](https://star-history.com/#amq92/simple_slurm&Date)
