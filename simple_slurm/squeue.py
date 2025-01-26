@@ -25,11 +25,11 @@ class SlurmSqueueWrapper:
         )
 
         if result.returncode != 0:
-            raise RuntimeError(f"Error running squeue: {result.stderr.strip()}")
+            raise RuntimeError(f"Error running squeue: {result.stderr}")
 
-        self.jobs = self._parse_output(result.stdout.strip())
+        self.jobs = self._parse_output(result.stdout)
 
-    def _is_valid_csv_format(self, format_str):
+    def _is_valid_csv_format(self, format_str: str):
         """validates that the output is a valid csv"""
         try:
             sniffer = csv.Sniffer()
@@ -40,11 +40,11 @@ class SlurmSqueueWrapper:
         except csv.Error:
             return False
 
-    def _parse_output(self, output):
+    def _parse_output(self, output: str):
         """converts the stdout into a python dictionary
         each key is a jobid as integer
         """
-        csv_file = StringIO(output)
+        csv_file = StringIO(output.strip())
         reader = csv.DictReader(
             csv_file, delimiter=",", quotechar='"', skipinitialspace=True
         )
@@ -58,7 +58,7 @@ class SlurmSqueueWrapper:
         for job in self.jobs.values():
             print(job)
 
-    def get_filtered_jobs(self, name_seek):
+    def get_filtered_jobs(self, name_seek: str):
         """Filters jobs by name"""
         matching_jobs = {}
         for job_id, job in self.jobs.items():
