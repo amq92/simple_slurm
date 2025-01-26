@@ -58,7 +58,7 @@ class SlurmSqueueWrapper:
         for job in self.jobs.values():
             print(job)
 
-    def get_filtered_jobs(self, name_seek:str):
+    def get_filtered_jobs(self, name_seek: str):
         """Filters jobs by name"""
         matching_jobs = {}
         for job_id, job in self.jobs.items():
