@@ -10,6 +10,9 @@
 <a href="https://github.com/amq92/simple_slurm/actions/workflows/python-run-tests.yml">
     <img src="https://github.com/amq92/simple_slurm/actions/workflows/python-run-tests.yml/badge.svg" alt="Run Python Tests" />
 </a>
+<a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" />
+</a>
 </p>
 
 ```python
@@ -21,14 +24,14 @@ slurm = Slurm(
     array=range(3, 12),
     cpus_per_task=15,
     dependency=dict(after=65541, afterok=34987),
-    gres=['gpu:kepler:2', 'gpu:tesla:2', 'mps:400'],
+    gres=["gpu:kepler:2", "gpu:tesla:2", "mps:400"],
     ignore_pbs=True,
-    job_name='name',
-    output=f'{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out',
+    job_name="name",
+    output=f"{Slurm.JOB_ARRAY_MASTER_ID}_{Slurm.JOB_ARRAY_ID}.out",
     time=datetime.timedelta(days=1, hours=2, minutes=3, seconds=4),
 )
-slurm.add_cmd('module load python')
-slurm.sbatch('python demo.py', Slurm.SLURM_ARRAY_TASK_ID)
+slurm.add_cmd("module load python")
+slurm.sbatch("python demo.py", Slurm.SLURM_ARRAY_TASK_ID)
 ```
 The above snippet is equivalent to running the following command:
 
@@ -51,37 +54,53 @@ python demo.py \$SLURM_ARRAY_TASK_ID
 EOF
 ```
 
-Get it using either one of :
+## Contents
+
++ [Installation](#installation)
++ [Introduction](#introduction)
++ [Core Features](#core-features)
+   - [Pythonic Slurm Syntax](#pythonic-slurm-syntax) *(was "Many syntaxes available")*
+   - [Adding Commands with `add_cmd`](#adding-commands-with-add_cmd)
+   - [Job Dependencies](#job-dependencies)
++ [Advanced Features](#advanced-features)
+   - [Command-Line Interface (CLI)](#command-line-interface-cli)
+   - [Using Configuration Files](#using-configuration-files)
+   - [Filename Patterns and Environment Variables](#filename-patterns-and-environment-variables)
++ [Job Management](#job-management)
+   - [Monitoring Jobs with `squeue`](#monitoring-jobs-with-squeue)
+   - [Canceling Jobs with `scancel`](#canceling-jobs-with-scancel)
++ [Error Handling](#error-handling)
++ [Contributing](#contributing)
++ [License](#license)
++ [Project Growth](#project-growth)
+
+
+## Installation
+
+The source code is currently hosted : [https://github.com/amq92/simple_slurm](https://github.com/amq92/simple_slurm)
+
+Install the latest `simple_slurm` version with:
+
 ```bash
 pip install simple_slurm
+```
+or using `conda`
+```bash
 conda install -c conda-forge simple_slurm
 ```
-
-## Contents
-+ [Introduction](#introduction)
-+ [Many syntaxes available](#many-syntaxes-available)
-    - [Using configuration files](#using-configuration-files)
-    - [Using the command line](#using-the-command-line)
-+ [Job dependencies](#job-dependencies)
-+ [Additional features](#additional-features)
-    - [Filename Patterns](#filename-patterns)
-    - [Output Environment Variables](#output-environment-variables)
-+ [Project growth](#project-growth)
-
-
 
 ## Introduction
 
 The [`sbatch`](https://slurm.schedmd.com/sbatch.html) and [`srun`](https://slurm.schedmd.com/srun.html) commands in [Slurm](https://slurm.schedmd.com/overview.html) allow submitting parallel jobs into a Linux cluster in the form of batch scripts that follow a certain structure.
 
-The goal of this library is to provide a simple wrapper for these functions (`sbatch` and `srun`) so that Python code can be used for constructing and launching the aforementioned batch script.
+The goal of this library is to provide a simple wrapper for these core functions so that Python code can be used for constructing and launching the aforementioned batch script.
 
 Indeed, the generated batch script can be shown by printing the `Slurm` object:
 
 ```python
 from simple_slurm import Slurm
 
-slurm = Slurm(array=range(3, 12), job_name='name')
+slurm = Slurm(array=range(3, 12), job_name="name")
 print(slurm)
 ```
 ```bash
@@ -93,8 +112,8 @@ print(slurm)
 
 Then, the job can be launched with either command:
 ```python
-slurm.srun('echo hello!')
-slurm.sbatch('echo hello!')
+slurm.srun("echo hello!")
+slurm.sbatch("echo hello!")
 ```
 ```bash
 >> Submitted batch job 34987
@@ -104,34 +123,16 @@ While both commands are quite similar, [`srun`](https://slurm.schedmd.com/srun.h
 > More information can be found in [Slurm's Quick Start Guide](https://slurm.schedmd.com/quickstart.html) and in [here](https://stackoverflow.com/questions/43767866/slurm-srun-vs-sbatch-and-their-parameters).
 
 
-Moreover, multi-line commands can be added using `add_cmd` and reset with `reset_cmd`.
-The `sbatch` directive will call `add_cmd` before launching the job.
-```python
-slurm.add_cmd('echo hello for the first time!')
-slurm.add_cmd('echo hello for the second time!')
-slurm.sbatch('echo hello for the last time!')
-slurm.reset_cmd()
-slurm.sbatch('echo hello again!')
-```
-This results in two outputs
-```
-hello for the first time!
-hello for the second time!
-hello for the last time!
-```
-```
-hello again!
-```
 
+## Core Features
 
-
-## Many syntaxes available
+### Pythonic Slurm Syntax
 
 ```python
-slurm = Slurm('-a', '3-11')
-slurm = Slurm('--array', '3-11')
-slurm = Slurm('array', '3-11')
-slurm = Slurm(array='3-11')
+slurm = Slurm("-a", "3-11")
+slurm = Slurm("--array", "3-11")
+slurm = Slurm("array", "3-11")
+slurm = Slurm(array="3-11")
 slurm = Slurm(array=range(3, 12))
 slurm.add_arguments(array=range(3, 12))
 slurm.set_array(range(3, 12))
@@ -142,12 +143,12 @@ It's up to you to choose the one(s) that best suits you needs.
 
 > *"With great flexibility comes great responsability"*
 
-You can either keep a command-line-like syntax or a more Python-like one
+You can either keep a command-line-like syntax or a more Python-like one.
 
 ```python
 slurm = Slurm()
-slurm.set_dependency('after:65541,afterok:34987')
-slurm.set_dependency(['after:65541', 'afterok:34987'])
+slurm.set_dependency("after:65541,afterok:34987")
+slurm.set_dependency(["after:65541", "afterok:34987"])
 slurm.set_dependency(dict(after=65541, afterok=34987))
 ```
 
@@ -158,19 +159,19 @@ Please note that hyphenated arguments, such as `--job-name`, need to be undersco
 (so to comply with Python syntax and be coherent).
 
 ```python
-slurm = Slurm('--job_name', 'name')
-slurm = Slurm(job_name='name')
+slurm = Slurm("--job_name", "name")
+slurm = Slurm(job_name="name")
 
-# slurm = Slurm('--job-name', 'name')  # NOT VALID
-# slurm = Slurm(job-name='name')       # NOT VALID
+# slurm = Slurm("--job-name", "name")  # NOT VALID
+# slurm = Slurm(job-name="name")       # NOT VALID
 ```
 
 Moreover, boolean arguments such as `--contiguous`, `--ignore_pbs` or `--overcommit` 
 can be activated with `True` or an empty string.
 
 ```python
-slurm = Slurm('--contiguous', True)
-slurm.add_arguments(ignore_pbs='')
+slurm = Slurm("--contiguous", True)
+slurm.add_arguments(ignore_pbs="")
 slurm.set_wait(False)
 print(slurm)
 ```
@@ -182,64 +183,51 @@ print(slurm)
 ```
 
 
+### Adding Commands with `add_cmd`
 
-
-### Using configuration files
-
-Let's define the *static* components of a job definition in a YAML file `default.slurm`
-
-```yaml
-cpus_per_task: 15
-job_name: 'name'
-output: '%A_%a.out'
-```
-
-Including these options with the using the `yaml` package is very *simple*
+The `add_cmd` method allows you to add multiple commands to the Slurm job script. These commands will be executed in the order they are added before the main command specified in `sbatch` or `srun` directive.
 
 ```python
-import yaml
-
 from simple_slurm import Slurm
 
-slurm = Slurm(**yaml.load(open('default.slurm')))
+slurm = Slurm(job_name="my_job", output="output.log")
 
-...
+# Add multiple commands
+slurm.add_cmd("module load python")
+slurm.add_cmd("export PYTHONPATH=/path/to/my/module")
+slurm.add_cmd('echo "Environment setup complete"')
 
-slurm.set_array(range(NUMBER_OF_SIMULATIONS))
+# Submit the job with the main command
+slurm.sbatch("python my_script.py")
 ```
 
-The job can be updated according to the *dynamic* project needs (ex. `NUMBER_OF_SIMULATIONS`).
-
-
-
-
-### Using the command line
-
-For simpler dispatch jobs, a comand line entry point is also made available.
+This will generate a Slurm job script like:
 
 ```bash
-simple_slurm [OPTIONS] "COMMAND_TO_RUN_WITH_SBATCH"
+#!/bin/sh
+
+#SBATCH --job-name            my_job
+#SBATCH --output              output.log
+
+module load python
+export PYTHONPATH=/path/to/my/module
+echo "Environment setup complete"
+python my_script.py
 ```
 
-As such, both of these `python` and `bash` calls are equivalent.
+You can reset the list of commands using the `reset_cmd` method:
 
 ```python
-slurm = Slurm(partition='compute.p', output='slurm.log', ignore_pbs=True)
-slurm.sbatch('echo \$HOSTNAME')
-```
-```bash
-simple_slurm --partition=compute.p --output slurm.log --ignore_pbs "echo \$HOSTNAME"
+slurm.reset_cmd()  # Clears all previously added commands
 ```
 
 
-
-
-## Job dependencies
+### Job dependencies
 
 The `sbatch` call prints a message if successful and returns the corresponding `job_id` 
 
 ```python
-job_id = slurm.sbatch('python demo.py ' + Slurm.SLURM_ARRAY_TAKSK_ID)
+job_id = slurm.sbatch("python demo.py " + Slurm.SLURM_ARRAY_TAKSK_ID)
 ```
 
 If the job submission was successful, it prints:
@@ -255,7 +243,57 @@ slurm_after = Slurm(dependency=dict(afterok=job_id)))
 ```
 
 
-## Additional features
+## Advanced Features
+
+### Command-Line Interface (CLI)
+
+For simpler dispatch jobs, a command line entry point is also made available.
+
+```bash
+simple_slurm [OPTIONS] "COMMAND_TO_RUN_WITH_SBATCH"
+```
+
+As such, both of these `python` and `bash` calls are equivalent.
+
+```python
+slurm = Slurm(partition="compute.p", output="slurm.log", ignore_pbs=True)
+slurm.sbatch("echo \$HOSTNAME")
+```
+```bash
+simple_slurm --partition=compute.p --output slurm.log --ignore_pbs "echo \$HOSTNAME"
+```
+
+
+### Using Configuration Files
+
+Let's define the *static* components of a job definition in a YAML file `slurm_default.yml`
+
+```yaml
+cpus_per_task: 15
+job_name: "name"
+output: "%A_%a.out"
+```
+
+Including these options with the using the `yaml` package is very *simple*
+
+```python
+import yaml
+
+from simple_slurm import Slurm
+
+slurm = Slurm(**yaml.load(open("slurm_default.yml", "r")))
+
+...
+
+slurm.set_array(range(NUMBER_OF_SIMULATIONS))
+```
+
+The job can be updated according to the *dynamic* project needs (ex. `NUMBER_OF_SIMULATIONS`).
+
+
+
+
+### Filename Patterns and Environment Variables
 
 For convenience, Filename Patterns and Output Environment Variables are available as attributes of the Simple Slurm object.
 
@@ -273,15 +311,8 @@ slurm.sbatch('python demo.py ' + slurm.SLURM_ARRAY_JOB_ID)
 This example would result in output files of the form `65541_15.out`.
 Here the job submission ID is `65541`, and this output file corresponds to the submission number `15` in the job array. Moreover, this index is passed to the Python code `demo.py` as an argument.
 
-> Note that they can be accessed either as `Slurm.<name>` or `slurm.<name>`, here `slurm` is an instance of the `Slurm` class.
 
-
-
-### Filename Patterns
-
-`sbatch` allows for a filename pattern to contain one or more replacement symbols.
-
-They can be accessed with `Slurm.<name>`
+`sbatch` allows for a filename pattern to contain one or more replacement symbols. They can be accessed with `Slurm.<name>`
 
 name                | value | description
 :-------------------|------:|:-----------
@@ -300,11 +331,7 @@ DO_NOT_PROCESS      | \\\\  |  do not process any of the replacement symbols
 
 
 
-### Output Environment Variables
-
-The Slurm controller will set the following variables in the environment of the batch script.
-
-They can be accessed with `Slurm.<name>`.
+The Slurm controller will set the following variables in the environment of the batch script. They can be accessed with `Slurm.<name>`.
 
 name                   | description
 :----------------------|:-----------
@@ -316,36 +343,81 @@ SLURM_ARRAY_TASK_STEP  | job array's index step size
 SLURM_ARRAY_JOB_ID     | job array's master job id number
 ...                    | ...
 
-See [https://slurm.schedmd.com/sbatch.html](https://slurm.schedmd.com/sbatch.html#lbAK) for a complete list.
 
+## Job Management
 
-### squeue
+Simple Slurm provides a simple interface to Slurm's job management tools (`squeue` and `scance`l) to let you monitor and control running jobs.
 
-You can use the built-in squeue to retrieve information about running jobs, or even filter jobs according to their name
+### Monitoring Jobs with `squeue`
+
+Retrieve and display job information for the current user:
 
 ```python
 from simple_slurm import Slurm
 
-slurm = Slurm(**yaml.safe_load(open('slurm_default.yml', 'r')))
-slurm.squeue.update_squeue()
-slurm.squeue.display_jobs()
+slurm = Slurm()
+slurm.squeue.update()  # Fetch latest job data
+
+# Get the jobs as a dictionary
+jobs = slurm.squeue.jobs
+
+for job_id, job in jobs.items():
+    print(job)
 ```
 
-### scancel
 
-Invokes the scancel command.  It provides two methods scancel.cancel_job() which sends a straightforward scancel
-and scancel.signal_job() which attempts to send a sigterm first.
+### Canceling Jobs with `scancel`
 
-Example below cancels the first found running job from the user
+Cancel single jobs or entire job arrays:
+
 ```python
 from simple_slurm import Slurm
 
-slurm = Slurm(**yaml.safe_load(open('slurm_default.yml', 'r')))
-slurm.squeue.update_squeue()
-for job_id in slurm.squeue.jobs:
+slurm = Slurm()
+
+# Cancel a specific job
+slurm.scancel.cancel_job(34987)
+
+# Cancel multiple jobs
+for job_id in [34987, 34988, 34989]:
     slurm.scancel.cancel_job(job_id)
-    break
+
+# Send SIGTERM before canceling (graceful termination)
+slurm.scancel.signal_job(34987)
+slurm.scancel.cancel_job(34987)
 ```
+
+
+## Error Handling
+The library does not raise specific exceptions for invalid Slurm arguments or job submission failures. Instead, it relies on the underlying Slurm commands (`sbatch`, `srun`, etc.) to handle errors. If a job submission fails, the error message from Slurm will be printed to the console.
+
+Additionally, if invalid arguments are passed to the Slurm object, the library uses `argparse` to validate them. If an argument is invalid, `argparse` will raise an error and print a helpful message.
+
+For example:
+
+```bash
+simple_slurm --invalid_argument=value "echo \$HOSTNAME"
+```
+
+This will result in an error like:
+
+```bash
+usage: simple_slurm [OPTIONS] "COMMAND_TO_RUN_WITH_SBATCH"
+simple_slurm: error: unrecognized arguments: --invalid_argument=value
+```
+
+
+## Contributing
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bugfix.
+3. Submit a pull request with a detailed description of your changes.
+
+
+
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Project growth
 [![Star History Chart](https://api.star-history.com/svg?repos=amq92/simple_slurm&type=Date)](https://star-history.com/#amq92/simple_slurm&Date)
