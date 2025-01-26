@@ -1,4 +1,4 @@
-name: Lint with Ruff
+name: Format with Ruff
 on:
   push:
     branches:
