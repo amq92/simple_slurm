@@ -312,7 +312,7 @@ echo "done"
         self.assertIn("Hello!", contents)
         self.assertIn(f"Submitted batch job {job_id}", stdout)
 
-    def test_19_add_cmd_single(self):
+    def test_20_add_cmd_single(self):
         slurm = Slurm(
             "-a",
             "3-11",
@@ -342,7 +342,7 @@ echo "done"
         )
         self.assertEqual(self.script + "\n" + self.commands, str(slurm))
 
-    def test_19_add_cmd_multiple(self):
+    def test_21_add_cmd_multiple(self):
         slurm = Slurm(
             "-a",
             "3-11",
@@ -366,7 +366,7 @@ echo "done"
         slurm.add_cmd('echo "done"')
         self.assertEqual(self.script + "\n" + self.commands, str(slurm))
 
-    def test_20_parsable_sbatch_execution(self):
+    def test_22_parsable_sbatch_execution(self):
         with io.StringIO() as buffer:
             with contextlib.redirect_stdout(buffer):
                 slurm = Slurm(contiguous=True, parsable=True)

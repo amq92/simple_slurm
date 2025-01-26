@@ -15,7 +15,7 @@ class SlurmScancelWrapper:
     def __init__(self, staledelta=timedelta(minutes=30)):
         self.stale_delta = staledelta
 
-    def cancel_job(self, job_id):
+    def cancel_job(self, job_id: int):
         """Sends a straightforward scancel to a job"""
         job_id = str(job_id)
         result = subprocess.run(
@@ -27,9 +27,9 @@ class SlurmScancelWrapper:
         if result.returncode != 0:
             raise RuntimeError(f"Error cancelling job: {result.stderr.strip()}")
 
-    def signal_job(self, job_id):
-        """First time it is sent to a job, tries send a sigtem to the job id
-        If sent again to the same job, attempts a sigkill instead
+    def signal_job(self, job_id: int):
+        """First time it is sent to a job, tries send a SIGTERM to the job id
+        If sent again to the same job, attempts a SIGKILL instead
         if that fails as well, involkes scancel without term arguments
         """
         job_id = str(job_id)
@@ -42,9 +42,9 @@ class SlurmScancelWrapper:
             self.sigmkills[job_id] = datetime.now()
             logger.warning(f"Failed to SIGTERM {job_id}. Sending SIGKILL")
         # Just straight up kills the node via slurm
-        elif job_id in self.sigmtems:
+        elif job_id in self.sigmkills:
             signal = ""
-            logger.warning(f"Failed to SIGKILL {job_id}. Terminating!")
+            logger.warning(f"Failed to SIGKILL {job_id}. Terminating with scancel")
         result = subprocess.run(
             ["scancel", signal, job_id],
             stdout=subprocess.PIPE,
