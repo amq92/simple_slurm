@@ -17,6 +17,7 @@ setup(
     url="https://github.com/amq92/simple_slurm",
     packages=find_packages(),
     package_data={"": ["*.txt"]},
+    include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Affero General Public License v3",
