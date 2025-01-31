@@ -26,11 +26,11 @@ jobs:
       - name: Build and upload the conda packages
         uses: uibcdf/action-build-and-upload-conda-packages@v1.4.0
         with:
-          meta_yaml_dir: devtools/conda-build
-          python-version: ${{ matrix.python-version }} # Values previously defined in `matrix`
+          meta_yaml_dir: ../conda
+          python-version: ${{ matrix.python-version }}
           platform_linux-64: true
           platform_osx-64: true
           platform_win-64: true
           user: uibcdf
           label: auto
-          token: ${{ secrets.ANACONDA_TOKEN }} # Replace with the right name of your secret
+          token: ${{ secrets.ANACONDA_TOKEN }}
