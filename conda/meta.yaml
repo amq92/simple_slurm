@@ -2,6 +2,9 @@
 package:
   name: simple_slurm
   version: {{ data['version'] }}
+dependencies:
+  - anaconda-client
+  - conda-build
 source:
   path: ..
 build:
