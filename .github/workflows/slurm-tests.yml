@@ -39,11 +39,11 @@ jobs:
 
       - name: Copy files to SLURM node
         run: |
-          mkdir -p /slurm_workspace
-          rsync -av --progress . /slurm_workspace/
-          ls -lah /slurm_workspace  # Debugging step to check file transfer
+          mkdir -p $HOME/slurm_workspace
+          rsync -av --progress . $HOME/slurm_workspace/
+          ls -lah $HOME/slurm_workspace  # Debugging step
 
       - name: Run tests inside SLURM
         run: |
-          cd /slurm_workspace
+          cd $HOME/slurm_workspace
           sbatch --wrap="python -m unittest -v"
