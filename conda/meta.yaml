@@ -2,19 +2,12 @@
 package:
   name: simple_slurm
   version: {{ data['version'] }}
-dependencies:
-  - anaconda-client
-  - conda-build
 source:
   path: ..
 build:
   number: 0
-  noarch: python
   script: python setup.py install --single-version-externally-managed --record=record.txt
 requirements:
-  build:
-    - python
-    - setuptools
   run:
     - python
 test:

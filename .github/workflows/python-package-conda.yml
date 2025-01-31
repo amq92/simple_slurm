@@ -14,28 +14,9 @@ jobs:
         python-version: ["3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Conda environment creation and activation
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-          auto-update-conda: false
-          auto-activate-base: false
-          show-channel-urls: true
-      - name: debug
-        run: |
-          pwd
-          conda-build [-V] 
-          ls */*
-      - name: Build and upload the conda packages
-        uses: uibcdf/action-build-and-upload-conda-packages@v1.4.0
-        with:
-          meta_yaml_dir: conda
-          python-version: ${{ matrix.python-version }}
-          platform_linux-64: true
-          platform_osx-64: true
-          platform_win-64: true
-          user: uibcdf
-          label: auto
-          token: ${{ secrets.ANACONDA_TOKEN }}
+      - name: publish-to-conda
+      uses: fcakyon/conda-publish-action@v1.3
+      with:
+        subdir: 'conda'
+        anacondatoken: ${{ secrets.ANACONDA_TOKEN }}
+        platforms: 'win osx linux'
