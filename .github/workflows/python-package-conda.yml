@@ -20,15 +20,12 @@ jobs:
       - name: Install dependencies
         run: |
           conda install conda-build
-          conda create -n test-env python=3.8
-          conda activate test-env
-          conda install simple_slurm
-
+          conda create -n test-env python=3.8 simple_slurm
       - name: Run tests
         run: |
+          conda init
           conda activate test-env
           python -m unittest discover -s tests
-
       - name: Publish to Conda
         uses: fcakyon/conda-publish-action@master
         with:
