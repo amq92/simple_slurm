@@ -1,16 +1,12 @@
 <h1 align="center">Simple Slurm</h1>
 <p align="center">A simple Python wrapper for Slurm with flexibility in mind<p>
 <p align="center">
-<a href="https://github.com/amq92/simple_slurm/actions/workflows/python-publish-pypi.yml">
-    <img src="https://github.com/amq92/simple_slurm/actions/workflows/python-publish-pypi.yml/badge.svg" alt="Publish to PyPI" />
-</a>
-<a href="https://github.com/amq92/simple_slurm/actions/workflows/python-package-conda.yml">
-    <img src="https://github.com/amq92/simple_slurm/actions/workflows/python-package-conda.yml/badge.svg" alt="Publish to Conda" />
-</a>
-<a href="https://github.com/amq92/simple_slurm/actions/workflows/python-run-tests.yml">
-    <img src="https://github.com/amq92/simple_slurm/actions/workflows/python-run-tests.yml/badge.svg" alt="Run Python Tests" />
-</a>
+<a href="https://github.com/amq92/simple_slurm"><img src="https://img.shields.io/github/actions/workflow/status/amq92/simple_slurm/python-run-tests.yml" alt="Run Tests"/></a>
+<a href="https://pypistats.org/packages/simple-slurm"><img src="https://img.shields.io/pypi/dm/simple_slurm" alt="PyPI Downloads"/></a>
+<a href="https://pypi.org/project/simple-slurm"><img src="https://img.shields.io/pypi/v/simple_slurm" alt="PyPI Version"/></a>
+<a href="https://anaconda.org/conda-forge/simple_slurm"><img src="https://img.shields.io/conda/vn/conda-forge/simple_slurm.svg" alt="Conda Version"/></a>
 </p>
+
 
 ```python
 import datetime

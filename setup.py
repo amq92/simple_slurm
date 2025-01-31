@@ -22,6 +22,7 @@ setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Operating System :: OS Independent",
+        "Development Status :: 5 - Production/Stable",
     ],
     python_requires=">=3.6",
     license="GNU Affero General Public License v3",
