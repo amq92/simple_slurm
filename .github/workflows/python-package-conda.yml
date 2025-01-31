@@ -6,16 +6,31 @@ on:
   workflow_dispatch:
 
 jobs:
-  conda_deployment_with_new_tag:
-    name: Conda deployment of package with Python ${{ matrix.python-version }}
+  publish:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@master
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          conda install conda-build
+          conda create -n test-env python=3.8
+          conda activate test-env
+          conda install simple_slurm
+
+      - name: Run tests
+        run: |
+          conda activate test-env
+          python -m unittest discover -s tests
+
       - name: Publish to Conda
-        uses: fcakyon/conda-publish-action@v1.3
+        uses: fcakyon/conda-publish-action@master
         with:
           subdir: 'conda'
           anacondatoken: ${{ secrets.ANACONDA_TOKEN }}
