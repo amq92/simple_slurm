@@ -43,7 +43,7 @@ jobs:
           rsync -av --progress . $HOME/slurm_workspace/
           ls -lah $HOME/slurm_workspace  # Debugging step
 
-      - name: Run tests inside SLURM
+      - name: Run tests with unittest
         run: |
           cd $HOME/slurm_workspace
-          sbatch --wrap="python -m unittest -v"
+          python -m unittest -v
