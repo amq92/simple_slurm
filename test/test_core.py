@@ -5,7 +5,6 @@ import os
 import shutil
 import subprocess
 import unittest
-from unittest.mock import patch
 
 from simple_slurm import Slurm
 
@@ -209,35 +208,17 @@ echo "done"
 
     def test_14_srun_returncode(self):
         slurm = Slurm(contiguous=True)
-        if shutil.which("srun") is not None:
-            code = slurm.srun("echo Hello!")
-        else:
-            with patch("subprocess.run", subprocess_srun):
-                code = slurm.srun("echo Hello!")
+        code = slurm.srun("echo Hello!")
         self.assertEqual(code, 0)
 
     def test_15_sbatch_execution(self):
-        with io.StringIO() as buffer:
-            with contextlib.redirect_stdout(buffer):
-                slurm = Slurm(contiguous=True)
-                if shutil.which("sbatch") is not None:
-                    job_id = slurm.sbatch("echo Hello!")
-                else:
-                    with patch("subprocess.run", subprocess_sbatch):
-                        job_id = slurm.sbatch("echo Hello!")
-                stdout = buffer.getvalue()
+        slurm = Slurm(contiguous=True)
+        job_id, stdout, contents = self.__run_sbatch(slurm, "echo Hello!")
 
-        out_file = f"slurm-{job_id}.out"
-        while True:  # wait for job to finalize
-            if os.path.isfile(out_file):
-                break
-        with open(out_file, "r") as fid:
-            contents = fid.read()
-        os.remove(out_file)
         self.assertFalse(slurm.is_parsable)
         self.assertIsInstance(job_id, int)
-        self.assertIn("Hello!", contents)
         self.assertIn(f"Submitted batch job {job_id}", stdout)
+        self.assertIn("Hello!", contents)
 
     def test_16_parse_timedelta(self):
         slurm = Slurm(
@@ -281,36 +262,20 @@ echo "done"
 
     def test_19_sbatch_execution_with_job_file(self):
         job_file = "script.sh"
-        with io.StringIO() as buffer:
-            with contextlib.redirect_stdout(buffer):
-                slurm = Slurm(contiguous=True)
-                if shutil.which("sbatch") is not None:
-                    job_id = slurm.sbatch("echo Hello!", job_file=job_file)
-                else:
-                    with patch("subprocess.run", subprocess_sbatch):
-                        job_id = slurm.sbatch("echo Hello!", job_file=job_file)
-                stdout = buffer.getvalue()
 
+        slurm = Slurm(contiguous=True)
+        job_id, stdout, contents = self.__run_sbatch(slurm, "echo Hello!", job_file=job_file)
+
+        self.assertFalse(slurm.is_parsable)
         self.assertIsInstance(job_id, int)
+        self.assertIn(f"Submitted batch job {job_id}", stdout)
+        self.assertIn("Hello!", contents)
 
-        out_file = f"slurm-{job_id}.out"
-        while True:  # wait for job to finalize
-            if os.path.isfile(out_file):
-                break
-        # Assert the script was written correctly
         with open(job_file, "r") as fid:
             job_contents = fid.read()
         os.remove(job_file)
 
-        self.assertEqual(job_contents, self.job_file_test_19)
-
-        # Assert the script was executed correctly
-        with open(out_file, "r") as fid:
-            contents = fid.read()
-        os.remove(out_file)
-
-        self.assertIn("Hello!", contents)
-        self.assertIn(f"Submitted batch job {job_id}", stdout)
+        self.assertEqual(self.job_file_test_19, job_contents)
 
     def test_20_add_cmd_single(self):
         slurm = Slurm(
@@ -367,54 +332,32 @@ echo "done"
         self.assertEqual(self.script + "\n" + self.commands, str(slurm))
 
     def test_22_parsable_sbatch_execution(self):
-        with io.StringIO() as buffer:
-            with contextlib.redirect_stdout(buffer):
-                slurm = Slurm(contiguous=True, parsable=True)
-                if shutil.which("sbatch") is not None:
-                    job_id = slurm.sbatch("echo Hello!")
-                else:
-                    with patch("subprocess.run", subprocess_sbatch_parsable):
-                        job_id = slurm.sbatch("echo Hello!")
-                stdout = buffer.getvalue()
+        slurm = Slurm(contiguous=True, parsable=True)
+        job_id, stdout, contents = self.__run_sbatch(slurm, "echo Hello!")
 
-        out_file = f"slurm-{job_id}.out"
-        while True:  # wait for job to finalize
-            if os.path.isfile(out_file):
-                break
-        with open(out_file, "r") as fid:
-            contents = fid.read()
-        os.remove(out_file)
         self.assertTrue(slurm.is_parsable)
         self.assertIsInstance(job_id, int)
         self.assertIn("Hello!", contents)
         self.assertEqual(f"{job_id}\n", stdout)
 
+    def __run_sbatch(self, slurm, run_cmd, *args, **kwargs):
+        # capture output in stdout
+        with io.StringIO() as buffer:
+            with contextlib.redirect_stdout(buffer):
+                job_id = slurm.sbatch(run_cmd, *args, **kwargs)
+                stdout = buffer.getvalue()
 
-def subprocess_srun(*args, **kwargs):
-    print("Hello!!!")
-    return subprocess.CompletedProcess(*args, returncode=0)
+        out_file = f"slurm-{job_id}.out"
 
+        # wait for job to finalize
+        while True:
+            if os.path.isfile(out_file):
+                break
+        with open(out_file, "r") as fid:
+            contents = fid.read()
+        os.remove(out_file)
 
-def subprocess_sbatch(*args, **kwargs):
-    job_id = 1234
-    out_file = f"slurm-{job_id}.out"
-    with open(out_file, "w") as fid:
-        fid.write("Hello!!!\n")
-    stdout = f"Submitted batch job {job_id}"
-    return subprocess.CompletedProcess(
-        *args, returncode=1, stdout=stdout.encode("utf-8")
-    )
-
-
-def subprocess_sbatch_parsable(*args, **kwargs):
-    job_id = 1234
-    out_file = f"slurm-{job_id}.out"
-    with open(out_file, "w") as fid:
-        fid.write("Hello!!!\n")
-    stdout = str(job_id)
-    return subprocess.CompletedProcess(
-        *args, returncode=0, stdout=stdout.encode("utf-8")
-    )
+        return job_id, stdout, contents
 
 
 if __name__ == "__main__":
