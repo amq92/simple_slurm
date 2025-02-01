@@ -190,7 +190,7 @@ class Slurm:
             > EOF
 
         For such reason if any bash variable is employed by the 'run_command',
-        the '$' should be scaped into '\$'. This behavior is default, set
+        the '$' should be scaped into '\\$'. This behavior is default, set
         'convert' to False to disable it.
 
         If the argument 'job_file' is used, the script will be written to the
