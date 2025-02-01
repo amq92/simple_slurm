@@ -341,7 +341,6 @@ echo "done"
         self.assertEqual(f"{job_id}\n", stdout)
 
     def __run_sbatch(self, slurm, *args, **kwargs):
-
         run_cmd = "echo Hello!"
 
         # capture output in stdout
