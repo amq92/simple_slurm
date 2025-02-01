@@ -264,7 +264,9 @@ echo "done"
         job_file = "script.sh"
 
         slurm = Slurm(contiguous=True)
-        job_id, stdout, contents = self.__run_sbatch(slurm, "echo Hello!", job_file=job_file)
+        job_id, stdout, contents = self.__run_sbatch(
+            slurm, "echo Hello!", job_file=job_file
+        )
 
         self.assertFalse(slurm.is_parsable)
         self.assertIsInstance(job_id, int)

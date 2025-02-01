@@ -55,7 +55,6 @@ class Testing(unittest.TestCase):
         )
 
     def __run_test(self, args):
-
         with io.StringIO() as buffer:
             with contextlib.redirect_stdout(buffer):
                 with patch.object(sys, "argv", args):
@@ -67,7 +66,7 @@ class Testing(unittest.TestCase):
         job_id = int(job_msg.replace("Submitted batch job ", ""))
 
         out_file = f"slurm-{job_id}.out"
-        
+
         # wait for job to finalize
         while True:
             if os.path.isfile(out_file):
