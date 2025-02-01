@@ -129,17 +129,30 @@ class Slurm:
         script = "\n".join((arguments, commands)).strip() + "\n"
         return script
 
-    def srun(self, run_cmd: str, srun_cmd: str = "srun") -> int:
+    def srun(self, *run_cmd: str, connector: str = ";", srun_cmd: str = "srun") -> int:
         """Run the srun command with all the (previously) set arguments and
-        the provided command in 'run_cmd'.
+        the provided commands in 'run_cmd' alongside with the previously set
+        commands using 'add_cmd'.
+
+        Note that 'run_cmd' can accept multiple arguments. Thus, any of the
+        other arguments must be given as key-value pairs :
+            > slurm.srun('echo "Hello"')
+            > slurm.srun('echo', '"Hello"')
+            > slurm.srun('echo', '"Hello"', verbose=False)
+
+        The 'connector' parameter defines how multiple commands are connected:
+            - A ; B   : Run A and then B, regardless of success of A.
+            - A && B  : Run B if and only if A succeeded.
+            - A || B  : Run B if and only if A failed.
         """
         args = (
             f"--{self._valid_key(k)}" + f"={v}" if len(v) else ""
             for k, v in vars(self.namespace).items()
             if v is not None
         )
-        cmd = " ".join((srun_cmd, *args, run_cmd))
-
+        self.add_cmd(*run_cmd)
+        commands = f" {connector} ".join(self.run_cmds)
+        cmd = " ".join((srun_cmd, *args, commands))
         result = subprocess.run(cmd, shell=True, check=True)
         return result.returncode
 
@@ -165,6 +178,7 @@ class Slurm:
             > slurm.sbatch('python main.py')
             > slurm.sbatch('python', 'main.py')
             > slurm.sbatch('python', 'main.py', verbose=False)
+
         This function employs the 'here document' syntax, which requires that
         bash variables be scaped. This behavior is default, set 'convert'
         to False to disable it.
