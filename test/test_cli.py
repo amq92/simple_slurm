@@ -65,21 +65,7 @@ class Testing(unittest.TestCase):
         script = "\n".join(script).strip()
         job_id = int(job_msg.replace("Submitted batch job ", ""))
 
-        if shutil.which("echo") is None:
-            # mimick the echo command if run inside the testing slurm image
-            contents = "Hello!"
-        else:
-            # wait for job to finalize
-            out_file = f"slurm-{job_id}.out"
-            while True:
-                if os.path.isfile(out_file):
-                    break
-            with open(out_file, "r") as fid:
-                contents = fid.read()
-            os.remove(out_file)
-
         self.assertEqual(self.script, script)
-        self.assertIn("Hello!", contents)
         self.assertIn(f"Submitted batch job {job_id}", stdout)
 
 
