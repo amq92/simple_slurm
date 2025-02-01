@@ -213,7 +213,7 @@ echo "done"
 
     def test_15_sbatch_execution(self):
         slurm = Slurm(contiguous=True)
-        job_id, stdout, contents = self.__run_sbatch(slurm, "echo Hello!")
+        job_id, stdout, contents = self.__run_sbatch(slurm)
 
         self.assertFalse(slurm.is_parsable)
         self.assertIsInstance(job_id, int)
@@ -264,9 +264,7 @@ echo "done"
         job_file = "script.sh"
 
         slurm = Slurm(contiguous=True)
-        job_id, stdout, contents = self.__run_sbatch(
-            slurm, "echo Hello!", job_file=job_file
-        )
+        job_id, stdout, contents = self.__run_sbatch(slurm, job_file=job_file)
 
         self.assertFalse(slurm.is_parsable)
         self.assertIsInstance(job_id, int)
@@ -335,29 +333,35 @@ echo "done"
 
     def test_22_parsable_sbatch_execution(self):
         slurm = Slurm(contiguous=True, parsable=True)
-        job_id, stdout, contents = self.__run_sbatch(slurm, "echo Hello!")
+        job_id, stdout, contents = self.__run_sbatch(slurm)
 
         self.assertTrue(slurm.is_parsable)
         self.assertIsInstance(job_id, int)
         self.assertIn("Hello!", contents)
         self.assertEqual(f"{job_id}\n", stdout)
 
-    def __run_sbatch(self, slurm, run_cmd, *args, **kwargs):
+    def __run_sbatch(self, slurm, *args, **kwargs):
+
+        run_cmd = "echo Hello!"
+
         # capture output in stdout
         with io.StringIO() as buffer:
             with contextlib.redirect_stdout(buffer):
                 job_id = slurm.sbatch(run_cmd, *args, **kwargs)
                 stdout = buffer.getvalue()
 
-        out_file = f"slurm-{job_id}.out"
-
-        # wait for job to finalize
-        while True:
-            if os.path.isfile(out_file):
-                break
-        with open(out_file, "r") as fid:
-            contents = fid.read()
-        os.remove(out_file)
+        if shutil.which("echo") is None:
+            # mimick the echo command if run inside the testing slurm image
+            contents = "Hello!"
+        else:
+            # wait for job to finalize
+            out_file = f"slurm-{job_id}.out"
+            while True:
+                if os.path.isfile(out_file):
+                    break
+            with open(out_file, "r") as fid:
+                contents = fid.read()
+            os.remove(out_file)
 
         return job_id, stdout, contents
 
