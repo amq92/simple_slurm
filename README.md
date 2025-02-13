@@ -347,7 +347,8 @@ Retrieve and display job information for the current user:
 from simple_slurm import Slurm
 
 slurm = Slurm()
-slurm.squeue.update()  # Fetch latest job data
+slurm.squeue.update_squeue()  # Fetch latest job data
+slurm.squeue.display_jobs()
 
 # Get the jobs as a dictionary
 jobs = slurm.squeue.jobs
