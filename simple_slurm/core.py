@@ -39,6 +39,9 @@ class Slurm:
         self.job_id = None
         self.cmd = None
 
+        # set default shell
+        self.set_shell()
+
         # add arguments into argparser
         for keys in read_simple_txt("arguments.txt"):
             self.parser.add_argument(*(fmt_key(k) for k in keys))
@@ -89,6 +92,10 @@ class Slurm:
             self._add_one_argument(key, value)
         return self
 
+    def set_shell(self, shell: str = "/bin/sh"):
+        """Set the shell to use or reset to default if not provided"""
+        self.shell = shell
+
     def add_cmd(self, *cmd_args: str):
         """Add a new command to the command list, it can be provided as a single
         argument (ie. a string) or a collection of arguments (all converted to
@@ -114,8 +121,11 @@ class Slurm:
         """
         return key.replace("_", "-")
 
-    def script(self, shell: str = "/bin/sh", convert: bool = True):
+    def script(self, shell: str = None, convert: bool = True):
         """Generate the sbatch script for the current arguments and commands"""
+
+        if shell is None:
+            shell = self.shell
 
         arguments = (
             "\n".join(
@@ -174,7 +184,7 @@ class Slurm:
         convert: bool = True,
         verbose: bool = True,
         sbatch_cmd: str = "sbatch",
-        shell: str = "/bin/sh",
+        shell: str = None,
         job_file: str = None,
     ) -> int:
         """Run the sbatch command with all the (previously) set arguments and
@@ -205,6 +215,11 @@ class Slurm:
         designated file, and then the command `sbatch <job_file>` will be
         executed.
         """
+        if shell is None:
+            shell = self.shell
+        else:
+            self.set_shell(shell)
+
         self.add_cmd(*run_cmd)
         if job_file is not None:
             with open(job_file, "w") as fid:

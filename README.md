@@ -59,6 +59,7 @@ EOF
    - [Command-Line Interface (CLI)](#command-line-interface-cli)
    - [Using Configuration Files](#using-configuration-files)
    - [Filename Patterns and Environment Variables](#filename-patterns-and-environment-variables)
+   - [Change execution shell](#change-execution-shell)
 + [Job Management](#job-management)
    - [Monitoring Jobs with `squeue`](#monitoring-jobs-with-squeue)
    - [Canceling Jobs with `scancel`](#canceling-jobs-with-scancel)
@@ -334,6 +335,16 @@ SLURM_ARRAY_TASK_STEP  | job array's index step size
 SLURM_ARRAY_JOB_ID     | job array's master job id number
 ...                    | ...
 
+
+### Change execution shell
+
+`/bin/sh` is the default shell path used in the script's first line.
+It can be modified with :
+```python
+slurm.set_shell("/bin/sh")
+slurm.sbatch("/bin/sh")
+```
+In both cases, the default shell is modified in the Slurm object (*i.e.* applicable to successive `sbatch` calls).
 
 ## Job Management
 
