@@ -63,6 +63,8 @@ EOF
 + [Job Management](#job-management)
    - [Monitoring Jobs with `squeue`](#monitoring-jobs-with-squeue)
    - [Canceling Jobs with `scancel`](#canceling-jobs-with-scancel)
+   - [Inspecting Jobs with `scontrol`](#inspecting-jobs-with-scontrol)
+   - [Inspecting `sacct`](#inspecting-sacct)
 + [Error Handling](#error-handling)
 + [Project Growth](#project-growth)
 
