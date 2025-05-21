@@ -2,8 +2,6 @@ import contextlib
 import datetime
 import io
 import os
-import shutil
-import subprocess
 import unittest
 
 from simple_slurm import Slurm

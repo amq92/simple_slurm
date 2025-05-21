@@ -76,7 +76,6 @@ class Slurm:
 
     def __int__(self) -> int:
         """Return the job ID of the last submitted job when calling int() on the object."""
-        
 
         if self.job_id is None:
             raise ValueError("Job ID is not set.")
@@ -266,7 +265,7 @@ class Slurm:
                     f"sbatch failed with error:\n{error.decode()}\nstdout:\n{stdout}\ncmd:\n{cmd}"
                 )
             job_id = int(stdout.split(" ")[3])
-        
+
         # store job id and command
         self.job_id = job_id
         self.scontrol.job_id = job_id
@@ -277,7 +276,6 @@ class Slurm:
         if verbose:
             print(stdout)
         return self
-    
 
 
 class Namespace:

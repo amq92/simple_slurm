@@ -1,7 +1,4 @@
-import os
 import subprocess
-import csv
-from io import StringIO
 from pprint import pformat
 
 
@@ -13,20 +10,26 @@ class SlurmScontrolWrapper:
         self.exit_code = None
 
     def __getitem__(self, key: str):
-        assert self.control is not None, f"scontrol not initialized. Call 'update(<job-id>)' first"
+        assert self.control is not None, (
+            "scontrol not initialized. Call 'update(<job-id>)' first"
+        )
         return [c[key] for c in self.control]
 
     def __len__(self):
         return len(self.control)
-    
+
     def __iter__(self):
-        assert self.control is not None, f"scontrol not initialized. Call 'update(<job-id>)' first"
+        assert self.control is not None, (
+            "scontrol not initialized. Call 'update(<job-id>)' first"
+        )
         return iter(self.control)
 
     def __str__(self):
-        assert self.control is not None, f"scontrol not initialized. Call 'update(<job-id>)' first"
+        assert self.control is not None, (
+            "scontrol not initialized. Call 'update(<job-id>)' first"
+        )
         return pformat(self.control)
-    
+
     def __repr__(self):
         return self.__str__()
 
@@ -79,8 +82,9 @@ class SlurmScontrolWrapper:
                     continue
                 key, value = pair.split("=", 1)
                 yield key, value
-        
+
         control = []
+        control_i = {}
         for i, line in enumerate(output.splitlines()):
             # start new block
             if "JobId=" in line:

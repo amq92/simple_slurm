@@ -1,7 +1,6 @@
 import subprocess
 from datetime import datetime, timedelta
 import logging
-from typing import Union
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
