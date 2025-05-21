@@ -24,7 +24,7 @@ class Slurm:
     Multiple syntaxes are allowed for defining the arguments.
     """
 
-    def __init__(self, kwargs_sacct={}, kwargs_scontrol={}, *args, **kwargs):
+    def __init__(self, *args, kwargs_sacct={}, kwargs_scontrol={}, **kwargs):
         """Initialize the parser with the given arguments."""
 
         # initialize parser
@@ -73,6 +73,14 @@ class Slurm:
         params = dict(vars(self.namespace))  # make copy
         params["run_cmds"] = self.run_cmds
         return repr(params)
+
+    def __int__(self) -> int:
+        """Return the job ID of the last submitted job when calling int() on the object."""
+        
+
+        if self.job_id is None:
+            raise ValueError("Job ID is not set.")
+        return self.job_id
 
     def _add_one_argument(self, key: str, value: str):
         """Parse the given key-value pair (the argument is given in key)."""

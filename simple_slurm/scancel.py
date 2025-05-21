@@ -1,6 +1,7 @@
 import subprocess
 from datetime import datetime, timedelta
 import logging
+from typing import Union
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -15,9 +16,10 @@ class SlurmScancelWrapper:
     def __init__(self, staledelta=timedelta(minutes=30)):
         self.stale_delta = staledelta
 
-    def cancel_job(self, job_id: int):
-        """Sends a straightforward scancel to a job"""
-        job_id = str(job_id)
+    def cancel_job(self, job_id):
+        """Sends a straightforward scancel to a job. job_id can be a str, int or slurm.Slurm() object"""
+        # int(slurm.Slurm)) returns a job id
+        job_id = str(int(job_id))
         result = subprocess.run(
             ["scancel", job_id],
             stdout=subprocess.PIPE,
@@ -27,12 +29,12 @@ class SlurmScancelWrapper:
         if result.returncode != 0:
             raise RuntimeError(f"Error cancelling job: {result.stderr.strip()}")
 
-    def signal_job(self, job_id: int):
+    def signal_job(self, job_id):
         """First time it is sent to a job, tries send a SIGTERM to the job id
         If sent again to the same job, attempts a SIGKILL instead
         if that fails as well, involkes scancel without term arguments
         """
-        job_id = str(job_id)
+        job_id = str(int(job_id))
         self.prune_old_jobs()
         signal = "--signal=TERM"
         if job_id not in self.sigmtems:
