@@ -57,7 +57,8 @@ class SlurmScontrolWrapper:
         self.control = self._parse_output(result.stdout)
         # set exit code [0:0, 2:0]... set it to the max value. should only be 0 if ALL jobs are finished successfully
         self.exit_code = max([int(c) for e in self["ExitCode"] for c in e.split(":")])
-        return self
+        if self["JobState"] == "PENDING":
+            self.exit_code = None
 
     def _parse_output(self, output: str):
         """

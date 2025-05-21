@@ -72,7 +72,6 @@ class SlurmSacctWrapper:
         if result.returncode != 0:
             raise RuntimeError(f"Error running scontrol: {result.stderr}")
         self.sacct = self._parse_output(result.stdout)
-        return self
 
     def _parse_output(self, output: str):
         """
