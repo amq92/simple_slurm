@@ -213,11 +213,12 @@ echo "done"
 
     def test_15_sbatch_execution(self):
         slurm = Slurm(contiguous=True)
-        job_id, stdout = self.__run_sbatch(slurm)
+        job, stdout = self.__run_sbatch(slurm)
 
         self.assertFalse(slurm.is_parsable)
-        self.assertIsInstance(job_id, int)
-        self.assertIn(f"Submitted batch job {job_id}", stdout)
+        self.assertIsInstance(job, Slurm)
+        self.assertIsInstance(int(job), int)
+        self.assertIn(f"Submitted batch job {int(job)}", stdout)
 
     def test_16_parse_timedelta(self):
         slurm = Slurm(
@@ -263,11 +264,12 @@ echo "done"
         job_file = "script.sh"
 
         slurm = Slurm(contiguous=True)
-        job_id, stdout = self.__run_sbatch(slurm, job_file=job_file)
+        job, stdout = self.__run_sbatch(slurm, job_file=job_file)
 
         self.assertFalse(slurm.is_parsable)
-        self.assertIsInstance(job_id, int)
-        self.assertIn(f"Submitted batch job {job_id}", stdout)
+        self.assertIsInstance(job, Slurm)
+        self.assertIsInstance(int(job), int)
+        self.assertIn(f"Submitted batch job {int(job)}", stdout)
 
         with open(job_file, "r") as fid:
             job_contents = fid.read()
@@ -331,18 +333,19 @@ echo "done"
 
     def test_22_parsable_sbatch_execution(self):
         slurm = Slurm(contiguous=True, parsable=True)
-        job_id, stdout = self.__run_sbatch(slurm)
+        job, stdout = self.__run_sbatch(slurm)
 
         self.assertTrue(slurm.is_parsable)
-        self.assertIsInstance(job_id, int)
-        self.assertEqual(f"{job_id}\n", stdout)
+        self.assertIsInstance(job, Slurm)
+        self.assertIsInstance(int(job), int)
+        self.assertEqual(f"{int(job)}\n", stdout)
 
     def __run_sbatch(self, slurm, *args, **kwargs):
         with io.StringIO() as buffer:
             with contextlib.redirect_stdout(buffer):
-                job_id = slurm.sbatch("echo Hello!", *args, **kwargs)
+                job = slurm.sbatch("echo Hello!", *args, **kwargs)
                 stdout = buffer.getvalue()
-        return job_id, stdout
+        return job, stdout
 
 
 if __name__ == "__main__":
