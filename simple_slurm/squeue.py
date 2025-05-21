@@ -50,7 +50,7 @@ class SlurmSqueueWrapper:
         )
         jobs = {}
         for row in reader:
-            jobs[int(row["JOBID"])] = row
+            jobs[row["JOBID"]] = row
         return jobs
 
     def display_jobs(self):

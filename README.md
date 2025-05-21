@@ -63,6 +63,8 @@ EOF
 + [Job Management](#job-management)
    - [Monitoring Jobs with `squeue`](#monitoring-jobs-with-squeue)
    - [Canceling Jobs with `scancel`](#canceling-jobs-with-scancel)
+   - [Inspecting Jobs with `scontrol`](#inspecting-jobs-with-scontrol)
+   - [Inspecting `sacct`](#inspecting-sacct)
 + [Error Handling](#error-handling)
 + [Project Growth](#project-growth)
 
@@ -348,7 +350,7 @@ In both cases, the default shell is modified in the Slurm object (*i.e.* applica
 
 ## Job Management
 
-Simple Slurm provides a simple interface to Slurm's job management tools (`squeue` and `scance`l) to let you monitor and control running jobs.
+Simple Slurm provides a simple interface to Slurm's job management tools (`squeue`,  `scancel`, `sacct` and `scontrol`) to let you monitor and control running jobs.
 
 ### Monitoring Jobs with `squeue`
 
@@ -385,11 +387,54 @@ slurm.scancel.cancel_job(34987)
 for job_id in [34987, 34988, 34989]:
     slurm.scancel.cancel_job(job_id)
 
+
 # Send SIGTERM before canceling (graceful termination)
 slurm.scancel.signal_job(34987)
 slurm.scancel.cancel_job(34987)
 ```
 
+### Inspecting Jobs with `scontrol`
+
+Check details and exit codes of job(s).
+
+```python
+from simple_slurm import Slurm
+
+# existing job
+slurm = Slurm()
+slurm.scontrol.update(job_id=<job-id>)
+
+# new jobs automatically assigns the job id
+slurm = Slurm()
+slurm.sbatch("echo hello world")
+slurm.scontrol.update()
+
+# output: list of job details for each job (in array)
+```
+
+### Inspecting `sacct`
+
+Get job resource information using `sacct`
+
+```python
+from simple_slurm import Slurm
+
+# existing job
+slurm = Slurm()
+slurm.sacct.update(job_id=<job-id>)
+
+# new jobs automatically assigns the job id
+slurm = Slurm()
+slurm.sbatch("echo hello world")
+slurm.sacct.update()
+
+# custom outputs:
+slurm = Slurm(kwargs_sacct={"fields": ["JobID", "JobName", "State", "Elapsed", "Start", "End"]})
+slurm.sacct.update(job_id=<job-id>)
+
+# output: list of resource requirements for each job (in array)
+slurm.sacct
+```
 
 ## Error Handling
 The library does not raise specific exceptions for invalid Slurm arguments or job submission failures. Instead, it relies on the underlying Slurm commands (`sbatch`, `srun`, etc.) to handle errors. If a job submission fails, the error message from Slurm will be printed to the console.

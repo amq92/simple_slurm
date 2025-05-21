@@ -7,6 +7,8 @@ from typing import Iterable
 
 from simple_slurm.squeue import SlurmSqueueWrapper
 from simple_slurm.scancel import SlurmScancelWrapper
+from simple_slurm.scontrol import SlurmScontrolWrapper
+from simple_slurm.sacct import SlurmSacctWrapper
 
 IGNORE_BOOLEAN = "IGNORE_BOOLEAN"
 
@@ -22,7 +24,7 @@ class Slurm:
     Multiple syntaxes are allowed for defining the arguments.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, kwargs_sacct={}, kwargs_scontrol={}, **kwargs):
         """Initialize the parser with the given arguments."""
 
         # initialize parser
@@ -30,6 +32,12 @@ class Slurm:
         self.parser = argparse.ArgumentParser()
         self.squeue = SlurmSqueueWrapper()
         self.scancel = SlurmScancelWrapper()
+        self.sacct = SlurmSacctWrapper(**kwargs_sacct)
+        self.scontrol = SlurmScontrolWrapper(**kwargs_scontrol)
+
+        # add variables for debug
+        self.job_id = None
+        self.cmd = None
 
         # set default shell
         self.set_shell()
@@ -65,6 +73,13 @@ class Slurm:
         params = dict(vars(self.namespace))  # make copy
         params["run_cmds"] = self.run_cmds
         return repr(params)
+
+    def __int__(self) -> int:
+        """Return the job ID of the last submitted job when calling int() on the object."""
+
+        if self.job_id is None:
+            raise ValueError("Job ID is not set.")
+        return self.job_id
 
     def _add_one_argument(self, key: str, value: str):
         """Parse the given key-value pair (the argument is given in key)."""
@@ -225,7 +240,8 @@ class Slurm:
                     "EOF",
                 )
             )
-        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
+        result = subprocess.run(cmd, capture_output=True, shell=True)
+
         # init for clarity
         job_id = None
         stdout = ""
@@ -239,12 +255,27 @@ class Slurm:
         else:
             success_msg = "Submitted batch job"
             stdout = result.stdout.decode()
-            assert success_msg in stdout, result.stderr
+            if success_msg not in stdout:
+                error = result.stderr
+                if error is None:
+                    error = result.stdout
+                if error is None:
+                    error = f"Unknown error for cmd:\n {cmd}"
+                raise RuntimeError(
+                    f"sbatch failed with error:\n{error.decode()}\nstdout:\n{stdout}\ncmd:\n{cmd}"
+                )
             job_id = int(stdout.split(" ")[3])
+
+        # store job id and command
+        self.job_id = job_id
+        self.scontrol.job_id = job_id
+        self.cmd = cmd
+
+        # assertions
         assert job_id is not None, "this should never happen, assert for linter"
         if verbose:
             print(stdout)
-        return job_id
+        return self
 
 
 class Namespace:
