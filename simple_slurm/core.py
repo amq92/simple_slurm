@@ -7,6 +7,8 @@ from typing import Iterable
 
 from simple_slurm.squeue import SlurmSqueueWrapper
 from simple_slurm.scancel import SlurmScancelWrapper
+from simple_slurm.scontrol import SlurmScontrolWrapper
+from simple_slurm.sacct import SlurmSacctWrapper
 
 IGNORE_BOOLEAN = "IGNORE_BOOLEAN"
 
@@ -30,6 +32,12 @@ class Slurm:
         self.parser = argparse.ArgumentParser()
         self.squeue = SlurmSqueueWrapper()
         self.scancel = SlurmScancelWrapper()
+        self.sacct = SlurmSacctWrapper()
+        self.scontrol = SlurmScontrolWrapper()
+
+        # add variables for debug
+        self.job_id = None
+        self.cmd = None
 
         # add arguments into argparser
         for keys in read_simple_txt("arguments.txt"):
@@ -210,7 +218,8 @@ class Slurm:
                     "EOF",
                 )
             )
-        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
+        result = subprocess.run(cmd, capture_output=True, shell=True)
+
         # init for clarity
         job_id = None
         stdout = ""
@@ -224,12 +233,28 @@ class Slurm:
         else:
             success_msg = "Submitted batch job"
             stdout = result.stdout.decode()
-            assert success_msg in stdout, result.stderr
+            if success_msg not in stdout:
+                error = result.stderr
+                if error is None:
+                    error = result.stdout
+                if error is None:
+                    error = f"Unknown error for cmd:\n {cmd}"
+                raise RuntimeError(
+                    f"sbatch failed with error:\n{error.decode()}\nstdout:\n{stdout}\ncmd:\n{cmd}"
+                )
             job_id = int(stdout.split(" ")[3])
+        
+        # store job id and command
+        self.job_id = job_id
+        self.scontrol.job_id = job_id
+        self.cmd = cmd
+
+        # assertions
         assert job_id is not None, "this should never happen, assert for linter"
         if verbose:
             print(stdout)
-        return job_id
+        return self
+    
 
 
 class Namespace:
