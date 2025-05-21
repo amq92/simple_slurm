@@ -24,7 +24,7 @@ class Slurm:
     Multiple syntaxes are allowed for defining the arguments.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, kwargs_sacct={}, kwargs_scontrol={}, *args, **kwargs):
         """Initialize the parser with the given arguments."""
 
         # initialize parser
@@ -32,8 +32,8 @@ class Slurm:
         self.parser = argparse.ArgumentParser()
         self.squeue = SlurmSqueueWrapper()
         self.scancel = SlurmScancelWrapper()
-        self.sacct = SlurmSacctWrapper()
-        self.scontrol = SlurmScontrolWrapper()
+        self.sacct = SlurmSacctWrapper(**kwargs_sacct)
+        self.scontrol = SlurmScontrolWrapper(**kwargs_scontrol)
 
         # add variables for debug
         self.job_id = None
