@@ -1,8 +1,5 @@
 import contextlib
 import io
-import os
-import shutil
-import subprocess
 import sys
 import unittest
 from unittest.mock import patch
