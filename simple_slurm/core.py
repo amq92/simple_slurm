@@ -58,7 +58,7 @@ class Slurm:
 
     def __str__(self) -> str:
         """Print the generated sbatch script."""
-        return self.script()
+        return self.script(convert=False)
 
     def __repr__(self) -> str:
         """Print the argparse namespace."""
