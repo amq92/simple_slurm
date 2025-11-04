@@ -134,7 +134,10 @@ class Slurm:
             + "\n"
         )
         commands = "\n".join(
-            [cmd.replace("$", "\\$") if convert else cmd for cmd in self.run_cmds]
+            [cmd.replace("\\", "\\\\").replace("$", "\\$").replace("`", "\\`")
+             if convert
+             else cmd
+             for cmd in self.run_cmds]
         )
         script = "\n".join((arguments, commands)).strip() + "\n"
         return script
