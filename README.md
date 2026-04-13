@@ -133,7 +133,7 @@ slurm.set_array(range(3, 12))
 All these arguments are equivalent!
 It's up to you to choose the one(s) that best suits you needs.
 
-> *"With great flexibility comes great responsability"*
+> *"With great flexibility comes great responsibility"*
 
 You can either keep a command-line-like syntax or a more Python-like one.
 
