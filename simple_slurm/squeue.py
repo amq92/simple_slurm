@@ -42,7 +42,8 @@ class SlurmSqueueWrapper:
 
     def _parse_output(self, output: str):
         """converts the stdout into a python dictionary
-        each key is a jobid as integer
+        each key is a jobid as integer, or the raw JOBID string for job array
+        entries (e.g. "123_4" or "123_[5-10%2]") that have no integer form
         """
         csv_file = StringIO(output.strip())
         reader = csv.DictReader(
@@ -50,7 +51,8 @@ class SlurmSqueueWrapper:
         )
         jobs = {}
         for row in reader:
-            jobs[int(row["JOBID"])] = row
+            job_id = row["JOBID"]
+            jobs[int(job_id) if job_id.isdigit() else job_id] = row
         return jobs
 
     def display_jobs(self):
